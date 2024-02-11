@@ -1,4 +1,4 @@
-const userSchema = require("../Utilities/schemaValidation");
+const userSchema = require("../Utilities/userRegistrationValidation");
 const { createToken, createTokenUser } = require("../Utilities/tokenTools");
 const User = require("../models/user");
 var bcrypt = require("bcryptjs");

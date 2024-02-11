@@ -2,17 +2,30 @@ const express = require("express");
 const router = express.Router();
 const adminAuthController = require("../controllers/adminAuthController");
 const adminController = require("../controllers/adminDashboard");
+const checkAdminAuthorities = require("../middleware/abac");
 // Route to login admin
 router.post("/login", adminAuthController.loginAdmin);
 
 // // Route to view a list of users
-router.get("/users", adminController.viewUsers);
+router.get(
+  "/users",
+  checkAdminAuthorities(["Users"]),
+  adminController.viewUsers
+);
 
 // // Route to search, filter, and sort users (bonus)
-router.get("/users/search", adminController.searchUsers);
+router.get(
+  "/users/search",
+  checkAdminAuthorities(["Users"]),
+  adminController.searchUsers
+);
 
 // // Route to edit user profiles
-// router.put("/users/:userId", adminController.editUserProfile);
+router.patch(
+  "/users/:userId",
+  checkAdminAuthorities(["Users"]),
+  adminController.editUserProfile
+);
 
 // // Route to deactivate or delete user accounts
 // router.put("/users/:userId/deactivate", adminController.deactivateUser);
