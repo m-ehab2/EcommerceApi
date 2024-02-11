@@ -1,6 +1,6 @@
 const Admin = require("../models/admin");
 var bcrypt = require("bcryptjs");
-const { createToken } = require("../Utilities/tokenTools");
+const { createTokenAdmin } = require("../Utilities/tokenTools");
 
 const loginAdmin = async (req, res, next) => {
   try {
@@ -19,10 +19,15 @@ const loginAdmin = async (req, res, next) => {
     }
 
     // Generate JWT token
-    const token = createToken(admin.email);
+    const token = createTokenAdmin(admin._id, admin.authorities);
 
     // Return success response with JWT token
-    res.json({ message: "Login successful", Token: token });
+    res.json({
+      message: "Login successful",
+      token: token,
+      authorities: admin.role,
+      username: admin.username,
+    });
   } catch (error) {
     // Pass the error to the error handling middleware
     next(error);

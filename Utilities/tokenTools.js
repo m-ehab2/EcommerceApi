@@ -2,16 +2,31 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config(); // Load environment variables from .env file
 
 // Create a token based on id
-const createToken = (id) => {
-  const token = jwt.sign({ _id: id }, process.env.JWT_SECRET, {
-    expiresIn: "2h",
-  });
+const createTokenUser = (email, status) => {
+  const token = jwt.sign(
+    { email: email, active: status },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "2h",
+    }
+  );
+  return token;
+};
+const createTokenAdmin = (id, authorities) => {
+  const token = jwt.sign(
+    { id: id, authorities: authorities },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "2h",
+    }
+  );
   return token;
 };
 
 const verifyToken = (req) => {
   // Extract token from the request (e.g., from headers)
-  const header = req.headers.authorization;
+  console.log(req.headers.Authorization);
+  const header = req.headers.Authorization;
 
   if (!header) {
     // If no token is provided, authentication fails
@@ -32,4 +47,4 @@ const verifyToken = (req) => {
   }
 };
 
-module.exports = { createToken, verifyToken };
+module.exports = { createTokenUser, verifyToken, createTokenAdmin };

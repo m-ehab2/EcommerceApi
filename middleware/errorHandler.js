@@ -7,6 +7,11 @@ const errorHandler = (err, req, res, next) => {
       success: false,
       error: "Invalid Schema",
     });
+  } else if (err.message === "Unauthorized") {
+    return res.status(400).json({
+      success: false,
+      error: "Unauthorized Access",
+    });
   } else if (err.name === "CastError" && err.kind === "ObjectId") {
     return res.status(400).json({
       success: false,

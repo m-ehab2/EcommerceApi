@@ -7,6 +7,11 @@ const adminSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     phone: { type: String },
+    authorities: {
+      Users: { type: Boolean, default: false },
+      Orders: { type: Boolean, default: false },
+      Products: { type: Boolean, default: false },
+    },
   },
   {
     timestamps: true,

@@ -1,5 +1,5 @@
 const userSchema = require("../Utilities/schemaValidation");
-const { createToken } = require("../Utilities/tokenTools");
+const { createToken, createTokenUser } = require("../Utilities/tokenTools");
 const User = require("../models/user");
 var bcrypt = require("bcryptjs");
 require("dotenv").config(); // Load environment variables from .env file
@@ -35,7 +35,7 @@ const registerUser = async (req, res, next) => {
     // Return success response and JWT
     res.status(201).json({
       message: "User registered successfully",
-      Token: createToken(user.email),
+      Token: createTokenUser(user.email, user.active),
     });
   } catch (error) {
     // Pass the error to the error handling middleware
@@ -59,13 +59,18 @@ const loginUser = async (req, res, next) => {
     }
 
     // Generate JWT token
-    const token = createToken(user.email);
+    const token = createTokenUser(user.email, user.active);
 
     // Return success response with JWT token
-    res.json({ message: "Login successful", Token: token });
+    res.json({
+      message: "Login successful",
+      Token: token,
+      Active: user.active,
+    });
   } catch (error) {
     // Pass the error to the error handling middleware
     next(error);
   }
 };
+
 module.exports = { registerUser, loginUser };
