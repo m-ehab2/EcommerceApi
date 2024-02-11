@@ -1,15 +1,15 @@
 const express = require("express");
 const router = express.Router();
 const adminAuthController = require("../controllers/adminAuthController");
-
+const adminController = require("../controllers/adminDashboard");
 // Route to login admin
 router.post("/login", adminAuthController.loginAdmin);
 
 // // Route to view a list of users
-// router.get("/users", adminController.viewUsers);
+router.get("/users", adminController.viewUsers);
 
 // // Route to search, filter, and sort users (bonus)
-// router.get("/users/search", adminController.searchUsers);
+router.get("/users/search", adminController.searchUsers);
 
 // // Route to edit user profiles
 // router.put("/users/:userId", adminController.editUserProfile);
