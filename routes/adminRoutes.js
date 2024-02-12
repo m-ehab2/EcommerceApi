@@ -28,7 +28,11 @@ router.patch(
 );
 
 // // Route to deactivate or delete user accounts
-// router.put("/users/:userId/deactivate", adminController.deactivateUser);
+router.patch(
+  "/users/:userId/deactivate",
+  checkAdminAuthorities(["Users"]),
+  adminController.deactivateUser
+);
 // router.delete("/users/:userId", adminController.deleteUser);
 
 // // Route to manage user roles and permissions

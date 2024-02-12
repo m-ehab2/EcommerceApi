@@ -15,10 +15,9 @@ const userSchema = new mongoose.Schema(
         city: { type: String, required: true },
         state: { type: String, required: true },
         zip: { type: String, required: true },
-        country: { type: String, required: true },
       },
     ],
-    phones: [{ type: String, value: String }],
+    phones: [{ type: Number }],
     cart: [
       {
         productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },

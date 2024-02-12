@@ -1,4 +1,4 @@
-const { verifyToken } = require("../Utilities/tokenTools");
+const updateUserSchema = require("../Utilities/userUpdateValidation");
 const User = require("../models/user");
 
 const viewUsers = async (req, res, next) => {
@@ -51,16 +51,20 @@ const editUserProfile = async (req, res, next) => {
     const updates = req.body;
 
     // Perform validation or any necessary preprocessing of the updates
-    //Validation Code by JOI
+    const { error } = updateUserSchema.validate(updates);
+    if (error) {
+      throw error;
+    }
 
     // Update the user profile in the database and store the updated document
-    const updatedUser = await User.findByIdAndUpdate(userId, updates, {
+    const updatedUser = await User.findOneAndUpdate({ _id: userId }, updates, {
       new: true,
+      projection: { password: 0 },
     });
 
     // Check if the user was found and updated
     if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
+      throw new Error("User not found");
     }
 
     // Return the updated user profile
@@ -70,4 +74,29 @@ const editUserProfile = async (req, res, next) => {
     next(error);
   }
 };
-module.exports = { viewUsers, searchUsers, editUserProfile };
+
+const deactivateUser = async (req, res, next) => {
+  try {
+    // Get user id from request
+    const userId = req.params.userId;
+
+    // Update the user profile in the database to deactivate the account
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { active: false },
+      { new: true }
+    );
+
+    // Check if the user was found and deactivated
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Return a success message or the updated user profile
+    res.json({ message: "User deactivated successfully", user: updatedUser });
+  } catch (error) {
+    // Handle errors
+    next(error);
+  }
+};
+module.exports = { viewUsers, searchUsers, editUserProfile, deactivateUser };
