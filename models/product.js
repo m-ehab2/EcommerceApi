@@ -11,20 +11,36 @@ const productSchema = new mongoose.Schema(
     manufacturer: { type: String },
     countryOfOrigin: { type: String },
     brandName: { type: String },
-    stock: { type: Number, default: 0 },
-    colors: [{ type: String }],
+    colors: [
+      {
+        colorName: { type: String },
+        quantity: { type: Number, default: 0 },
+      },
+    ],
     price: { type: Number, required: true },
     discountPercentage: { type: Number, default: 0 },
-    rating: { type: Number, default: 0 },
+    ratings: {
+      count: { type: Number, default: 0 },
+      average: { type: Number, default: 0 },
+    },
     reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }],
     category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
     subCategory: { type: mongoose.Schema.Types.ObjectId, ref: "SubCategory" },
     keywords: [{ type: String }],
+    frozen: { type: Boolean, default: false },
+    tickets: { type: mongoose.Schema.Types.ObjectId, ref: "Ticket" },
   },
   {
     timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
+
+// Calculate stock property as sum of quantities of all colors
+productSchema.virtual("stock").get(function () {
+  return this.colors.reduce((total, color) => total + color.quantity, 0);
+});
 
 // Create Product model
 const Product = mongoose.model("Product", productSchema);

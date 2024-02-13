@@ -11,6 +11,7 @@ const adminSchema = new mongoose.Schema(
       Users: { type: Boolean, default: false },
       Orders: { type: Boolean, default: false },
       Products: { type: Boolean, default: false },
+      Categories: { type: Boolean, default: false },
     },
   },
   {

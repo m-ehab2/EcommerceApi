@@ -1,6 +1,7 @@
 const updateUserSchema = require("../Utilities/userUpdateValidation");
 const User = require("../models/user");
 
+//User Control Logic
 const viewUsers = async (req, res, next) => {
   try {
     // Fetch users from the database
@@ -74,29 +75,70 @@ const editUserProfile = async (req, res, next) => {
     next(error);
   }
 };
-
-const deactivateUser = async (req, res, next) => {
+const deactivateUsers = async (req, res, next) => {
   try {
-    // Get user id from request
-    const userId = req.params.userId;
+    // Get array of user ids from request body
+    const userIds = req.body.userIds;
 
-    // Update the user profile in the database to deactivate the account
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { active: false },
-      { new: true }
-    );
-
-    // Check if the user was found and deactivated
-    if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
+    // Check if userIds is not an array or is empty
+    if (!Array.isArray(userIds) || userIds.length === 0) {
+      throw new Error("User IDs array is required");
     }
 
-    // Return a success message or the updated user profile
-    res.json({ message: "User deactivated successfully", user: updatedUser });
+    // Update all users in the database to deactivate their accounts
+    const updatedUsers = await User.updateMany(
+      { _id: { $in: userIds } },
+      { active: false }
+    );
+
+    // Check if any users were updated
+    if (updatedUsers.modifiedCount === 0) {
+      throw new Error("No users found to deactivate");
+    }
+
+    // Return a success message or the number of users deactivated
+    res.json({
+      message: `${updatedUsers.modifiedCount} users deactivated successfully`,
+    });
   } catch (error) {
     // Handle errors
     next(error);
   }
 };
-module.exports = { viewUsers, searchUsers, editUserProfile, deactivateUser };
+const deleteUsers = async (req, res, next) => {
+  try {
+    // Get array of user ids from request body
+    const userIds = req.body.userIds;
+
+    // Check if userIds is not an array or is empty
+    if (!Array.isArray(userIds) || userIds.length === 0) {
+      throw new Error("User IDs array is required");
+    }
+
+    // Delete all users from the database
+    const deletedUsers = await User.deleteMany({ _id: { $in: userIds } });
+
+    // Check if any users were deleted
+    if (deletedUsers.deletedCount === 0) {
+      throw new Error("No users found to delete");
+    }
+
+    // Return a success message or the number of users deleted
+    res.json({
+      message: `${deletedUsers.deletedCount} users deleted successfully`,
+    });
+  } catch (error) {
+    // Pass the error to the next middleware
+    next(error);
+  }
+};
+
+const createCategory = async (req, res, next) => {};
+module.exports = {
+  viewUsers,
+  searchUsers,
+  editUserProfile,
+  deactivateUsers,
+  deleteUsers,
+  createCategory,
+};

@@ -1,21 +1,34 @@
 const Joi = require("joi");
+
 const errorHandler = (err, req, res, next) => {
-  //   console.error(err.stack);
-  console.log(err);
+  console.error(err);
+
   if (err instanceof Joi.ValidationError) {
-    return res.status(400).json({
+    return res.status(422).json({
       success: false,
       error: "Invalid Schema",
     });
   } else if (err.message === "Unauthorized") {
-    return res.status(400).json({
+    return res.status(401).json({
       success: false,
       error: "Unauthorized Access",
     });
-  } else if (err.message === "User not found") {
-    return res.status(400).json({
+  } else if (
+    err.message === "User not found" ||
+    err.message === "User IDs array is required" ||
+    err.message === "jwt expired" ||
+    err.message === "Invalid credentials" ||
+    err.message === "Category not found"
+  ) {
+    return res.status(404).json({
       success: false,
-      error: "Bad ID",
+      error: err.message,
+    });
+  } else if (err.code === 11000) {
+    // Duplicate key error
+    return res.status(409).json({
+      success: false,
+      error: "Duplicate key error",
     });
   } else if (err.name === "CastError" && err.kind === "ObjectId") {
     return res.status(400).json({
@@ -23,20 +36,14 @@ const errorHandler = (err, req, res, next) => {
       error: "Invalid Id",
     });
   } else if (err.message === "Email is already registered") {
-    return res.status(400).json({
+    return res.status(409).json({
       success: false,
       error: "Email is already registered",
     });
-  } else if (err.message === "Invalid credentials") {
-    return res.status(400).json({
-      success: false,
-      error: "Invalid Credentials",
-    });
   } else {
-    console.log(err);
     return res.status(500).json({
       success: false,
-      error: err,
+      error: err.message || "Internal Server Error",
     });
   }
 };
