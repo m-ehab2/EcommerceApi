@@ -8,10 +8,10 @@ const adminSchema = new mongoose.Schema(
     password: { type: String, required: true },
     phone: { type: String },
     authorities: {
-      Users: { type: Boolean, default: false },
-      Orders: { type: Boolean, default: false },
-      Products: { type: Boolean, default: false },
-      Categories: { type: Boolean, default: false },
+      users: { type: Boolean, default: false },
+      orders: { type: Boolean, default: false },
+      products: { type: Boolean, default: false },
+      categories: { type: Boolean, default: false },
     },
   },
   {

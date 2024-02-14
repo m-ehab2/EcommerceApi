@@ -4,17 +4,25 @@ const connect = require("./config/db");
 const userRoutes = require("./routes/userRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const errorHandler = require("./middleware/errorHandler");
-require("dotenv").config(); // Load environment variables from .env file
+const morgan = require("morgan");
+require("dotenv").config();
 
 // Create an instance of Express
 const app = express();
+
+// Parse body as JSON
 app.use(express.json());
-// Define a route
+
+//User morgan to log requests
+app.use(morgan("combined"));
+
+// Define routes
 app.use("/api/users", userRoutes);
 app.use("/api/dashboard", adminRoutes);
 
-//Use Error Handling Middleware
+//Use error handling middleware
 app.use(errorHandler);
+
 //Connect To Db
 connect(process.env.URI);
 

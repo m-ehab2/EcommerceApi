@@ -25,7 +25,7 @@ const loginAdmin = async (req, res, next) => {
     res.json({
       message: "Login successful",
       token: token,
-      authorities: admin.role,
+      authorities: admin.authorities,
       username: admin.username,
     });
   } catch (error) {

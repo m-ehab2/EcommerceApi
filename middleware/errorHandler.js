@@ -35,10 +35,13 @@ const errorHandler = (err, req, res, next) => {
       success: false,
       error: "Invalid Id",
     });
-  } else if (err.message === "Email is already registered") {
+  } else if (
+    err.message === "Email is already registered" ||
+    err.message === "Duplicate Product"
+  ) {
     return res.status(409).json({
       success: false,
-      error: "Email is already registered",
+      error: err.message,
     });
   } else {
     return res.status(500).json({

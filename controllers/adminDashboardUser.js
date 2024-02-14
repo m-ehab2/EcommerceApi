@@ -5,10 +5,25 @@ const User = require("../models/user");
 const viewUsers = async (req, res, next) => {
   try {
     // Fetch users from the database
-    const users = await User.find({}, { password: 0 });
+    const user = await User.find({}, { password: 0 });
 
     // Return the list of users in the response
-    res.json(users);
+    res.json(user);
+  } catch (error) {
+    // If an error occurs, pass it to the error handling middleware
+    next(error);
+  }
+};
+const getUser = async (req, res, next) => {
+  try {
+    // Fetch users from the database
+    const user = await User.findById(
+      { _id: req.params.userId },
+      { password: 0 }
+    );
+
+    // Return the list of users in the response
+    res.json(user);
   } catch (error) {
     // If an error occurs, pass it to the error handling middleware
     next(error);
@@ -133,12 +148,11 @@ const deleteUsers = async (req, res, next) => {
   }
 };
 
-const createCategory = async (req, res, next) => {};
 module.exports = {
   viewUsers,
   searchUsers,
   editUserProfile,
   deactivateUsers,
   deleteUsers,
-  createCategory,
+  getUser,
 };
