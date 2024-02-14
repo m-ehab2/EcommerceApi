@@ -1,4 +1,4 @@
-const updateUserSchema = require("../Utilities/userUpdateValidation");
+const updateUserSchema = require("../validation/userUpdateValidation");
 const User = require("../models/user");
 
 //User Control Logic

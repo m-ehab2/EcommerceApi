@@ -1,6 +1,6 @@
 const Admin = require("../models/admin");
 var bcrypt = require("bcryptjs");
-const { createTokenAdmin } = require("../Utilities/tokenTools");
+const { createTokenAdmin } = require("../utilities/tokenTools");
 
 const loginAdmin = async (req, res, next) => {
   try {

@@ -1,5 +1,5 @@
 const Category = require("../models/category");
-const categoryCreationSchema = require("../Utilities/categoryCreationValidation");
+const categoryCreationSchema = require("../validation/categoryCreationValidation");
 
 const createCategory = async (req, res, next) => {
   try {

@@ -1,8 +1,10 @@
 const Product = require("../models/product");
 const formidable = require("formidable");
 const imgbbUploader = require("imgbb-uploader");
-const productValidationSchema = require("../Utilities/productCreationValidation");
+const productValidationSchema = require("../validation/productCreationValidation");
+const ticketValidationSchema = require("../validation/productCreationValidation");
 const Category = require("../models/category");
+const Ticket = require("../models/ticket");
 
 const createProduct = async (req, res, next) => {
   try {
@@ -65,7 +67,6 @@ const createProduct = async (req, res, next) => {
     next(error);
   }
 };
-
 const getAllProducts = async (req, res, next) => {
   try {
     //Get page number from request params
@@ -73,8 +74,12 @@ const getAllProducts = async (req, res, next) => {
     console.log(pageNumber);
     const numberPerPage = 10;
     const skipItems = (pageNumber - 1) * numberPerPage;
-    // Retrieve all products from the database
-    const products = await Product.find({}, { _id: 0, colors: 1 })
+
+    // Retrieve total count of products (unpaginated)
+    const totalCount = await Product.countDocuments({});
+
+    // Retrieve all products from the database paginated
+    const products = await Product.find({})
       .skip(skipItems)
       .limit(numberPerPage);
 
@@ -87,14 +92,13 @@ const getAllProducts = async (req, res, next) => {
     res.json({
       success: true,
       products: products,
-      productsLength: products.length,
+      numberOfProducts: totalCount,
     });
   } catch (error) {
     // Pass any errors to the error handling middleware
     next(error);
   }
 };
-
 const updateProduct = async (req, res, next) => {
   try {
     const form = new formidable.IncomingForm();
@@ -190,10 +194,96 @@ const freezeProducts = async (req, res, next) => {
     next(error);
   }
 };
+const addTicket = async (req, res, next) => {
+  try {
+    // Validate ticket input
+    const { error } = ticketValidationSchema.validate(req.body);
+    // Extracting data from the request body
+    const { title, description, product_ids } = req.body;
+
+    // Creating a new ticket document
+    const newTicket = await Ticket.create({
+      title,
+      description,
+      product_ids,
+    });
+
+    // Update products with the new ticket id
+    await Product.updateMany(
+      { _id: { $in: product_ids } }, // Update products with matching IDs
+      { $push: { tickets: newTicket._id } } // Add the new ticket ID to the tickets array
+    );
+
+    // Sending a success response with the newly created ticket
+    res.status(201).json(newTicket);
+  } catch (error) {
+    // Handling errors
+    next(error);
+  }
+};
+const searchProducts = async (req, res, next) => {
+  try {
+    // Get page number from request query params
+    const pageNumber = parseInt(req.query.p, 10) || 1;
+    const numberPerPage = 10;
+    const skipItems = (pageNumber - 1) * numberPerPage;
+
+    // Define the filter object based on query parameters
+    const filter = {};
+    let products, totalCount;
+
+    if (req.query.id_modelNumber) {
+      if (/^[0-9a-fA-F]{24}$/.test(req.query.id_modelNumber)) {
+        filter._id = req.query.id_modelNumber;
+      } else {
+        filter.modelNumber = req.query.id_modelNumber;
+      }
+    } else {
+      if (req.query.name) filter.name = req.query.name;
+      if (req.query.brandName) filter.brandName = req.query.brandName;
+      if (req.query.category) filter.category = req.query.category;
+      if (req.query.subCategory) filter.subCategory = req.query.subCategory;
+      if (req.query.minPrice || req.query.maxPrice) {
+        filter.price = {}; // Initialize filter.price as an empty object
+        if (req.query.minPrice) filter.price.$gte = req.query.minPrice;
+        if (req.query.maxPrice) filter.price.$lte = req.query.maxPrice;
+      }
+      console.log(filter);
+
+      // Retrieve total count of products (unpaginated)
+      totalCount = await Product.countDocuments(filter);
+
+      // Retrieve paginated products from the database with optional filtering
+      products = await Product.find(filter)
+        .skip(skipItems)
+        .limit(numberPerPage);
+    }
+
+    // Check if any products were found
+    if (!products || products.length === 0) {
+      res.json({ success: true, totalCount: totalCount || 0, products: [] });
+      return;
+    }
+
+    // Return the total count of products and the paginated products
+    res.json({
+      success: true,
+      totalCount: totalCount,
+      products: products,
+      productsLength: products.length,
+    });
+  } catch (error) {
+    // Pass any errors to the error handling middleware
+    next(error);
+  }
+};
+
 module.exports = {
   createProduct,
   getAllProducts,
   updateProduct,
   getProduct,
   freezeProducts,
+  addTicket,
+  searchProducts,
 };

@@ -1,5 +1,5 @@
-const userSchema = require("../Utilities/userRegistrationValidation");
-const { createTokenUser } = require("../Utilities/tokenTools");
+const userSchema = require("../validation/userRegistrationValidation");
+const { createTokenUser } = require("../utilities/tokenTools");
 const User = require("../models/user");
 var bcrypt = require("bcryptjs");
 require("dotenv").config(); // Load environment variables from .env file

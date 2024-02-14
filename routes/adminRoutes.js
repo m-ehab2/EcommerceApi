@@ -102,6 +102,13 @@ router.get(
   adminProductsController.getAllProducts
 );
 
+// Route to query products
+router.get(
+  "/products/search",
+  checkAdminAuthorities(["products"]),
+  adminProductsController.searchProducts
+);
+
 // Route to get one product
 router.get(
   "/products/:productId",
@@ -124,11 +131,10 @@ router.patch(
 );
 
 // Route to freeze products
-router.patch(
-  "/products/freeze",
+router.post(
+  "/products/ticket",
   checkAdminAuthorities(["products"]),
-  adminProductsController.freezeProducts
+  adminProductsController.addTicket
 );
 
-// Route to
 module.exports = router;
