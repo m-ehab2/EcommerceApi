@@ -71,7 +71,6 @@ const getAllProducts = async (req, res, next) => {
   try {
     //Get page number from request params
     const pageNumber = parseInt(req.query.p, 10) || 1;
-    console.log(pageNumber);
     const numberPerPage = 10;
     const skipItems = (pageNumber - 1) * numberPerPage;
 
@@ -179,7 +178,6 @@ const freezeProducts = async (req, res, next) => {
   try {
     // Get Id array from req body
     const productIds = req.body.productIds;
-    console.log(productIds);
 
     // update all posts in Id array
     const updatedProducts = await Product.updateMany(
@@ -248,7 +246,6 @@ const searchProducts = async (req, res, next) => {
         if (req.query.minPrice) filter.price.$gte = req.query.minPrice;
         if (req.query.maxPrice) filter.price.$lte = req.query.maxPrice;
       }
-      console.log(filter);
 
       // Retrieve total count of products (unpaginated)
       totalCount = await Product.countDocuments(filter);

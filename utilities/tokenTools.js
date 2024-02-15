@@ -12,9 +12,9 @@ const createTokenUser = (email, status) => {
   );
   return token;
 };
-const createTokenAdmin = (id, authorities) => {
+const createTokenAdmin = (id, authorities, username) => {
   const token = jwt.sign(
-    { id: id, authorities: authorities },
+    { id: id, authorities: authorities, username },
     process.env.JWT_SECRET,
     {
       expiresIn: "10h",
@@ -25,7 +25,6 @@ const createTokenAdmin = (id, authorities) => {
 
 const verifyToken = (req) => {
   // Extract token from the request (e.g., from headers)
-  console.log(req.headers.Authorization);
   const header = req.headers.Authorization;
 
   if (!header) {

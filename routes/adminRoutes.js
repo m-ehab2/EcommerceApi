@@ -4,10 +4,36 @@ const adminAuthController = require("../controllers/adminAuthController");
 const adminUserController = require("../controllers/adminDashboardUser");
 const adminCatController = require("../controllers/adminDashboardCategories");
 const adminProductsController = require("../controllers/adminDashboardProducts");
+const adminOrdersController = require("../controllers/adminDashboardOrders");
 const checkAdminAuthorities = require("../middleware/abac");
+
+// Admin Authentication Routs
 
 // Route to login admin
 router.post("/login", adminAuthController.loginAdmin);
+
+// Authorization Control Routes
+
+// Route to create a new admin
+router.post(
+  "/admins",
+  checkAdminAuthorities(["admin"]),
+  adminAuthController.createAdmin
+);
+
+// Route to create a new admin
+router.get(
+  "/admins",
+  checkAdminAuthorities(["admin"]),
+  adminAuthController.getAllAdmins
+);
+
+// Route to create a new admin
+router.patch(
+  "/admins/:adminId",
+  checkAdminAuthorities(["admin"]),
+  adminAuthController.updateAdmin
+);
 
 //User Control Routes
 
@@ -52,9 +78,6 @@ router.delete(
   checkAdminAuthorities(["users"]),
   adminUserController.deleteUsers
 );
-
-// Route to manage user roles and permissions
-// router.put("/users/:userId/roles", adminController.updateUserRoles);
 
 // Category Control Routes
 
@@ -135,6 +158,25 @@ router.post(
   "/products/ticket",
   checkAdminAuthorities(["products"]),
   adminProductsController.addTicket
+);
+
+// Voucher Control Routes
+router.post("/vouchers", checkAdminAuthorities(["vouchers"]));
+
+// Orders Control Routes
+
+// Route to create an order
+router.post(
+  "/orders",
+  checkAdminAuthorities(["orders"]),
+  adminOrdersController.createOrder
+);
+
+// Route to get all orders
+router.get(
+  "/orders",
+  checkAdminAuthorities(["orders"]),
+  adminOrdersController.getAllOrders
 );
 
 module.exports = router;

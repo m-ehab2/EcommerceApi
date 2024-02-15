@@ -1,13 +1,15 @@
 const Admin = require("../models/admin");
 var bcrypt = require("bcryptjs");
 const { createTokenAdmin } = require("../utilities/tokenTools");
-
+const adminValidationSchema = require("../validation/adminCreationValidation");
+const jwt = require("jsonwebtoken");
+const Log = require("../models/log");
 const loginAdmin = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
     // Find user by email
-    const admin = await Admin.findOne({ email });
+    const admin = await Admin.findOne({ username });
     if (!admin) {
       throw "Invalid email or password";
     }
@@ -19,14 +21,19 @@ const loginAdmin = async (req, res, next) => {
     }
 
     // Generate JWT token
-    const token = createTokenAdmin(admin._id, admin.authorities);
+    const token = createTokenAdmin(
+      admin._id,
+      admin.authorities,
+      admin.username
+    );
 
     // Return success response with JWT token
     res.json({
       message: "Login successful",
       token: token,
-      authorities: admin.authorities,
       username: admin.username,
+      authorities: admin.authorities,
+      id: admin._id,
     });
   } catch (error) {
     // Pass the error to the error handling middleware
@@ -34,4 +41,100 @@ const loginAdmin = async (req, res, next) => {
   }
 };
 
-module.exports = { loginAdmin };
+const createAdmin = async (req, res, next) => {
+  try {
+    // Get admin info from request body
+    const { username, password, authorities } = req.body;
+
+    // Validate request body
+    const { error } = adminValidationSchema.validate(req.body);
+    if (error) {
+      throw error;
+    }
+
+    // Check duplicate username
+    const admin = await Admin.findOne({ username: username });
+    if (admin) {
+      throw new Error("Duplicate Admin Username");
+    }
+
+    // Decode token to get admin ID
+    const token = req.headers.authorization.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Hash admin password
+    const hashedPassword = await bcrypt.hash(password, 5);
+
+    // Create a new admin
+    const newAdmin = await Admin.create({
+      username: username,
+      password: hashedPassword,
+      createdBy: decoded.username,
+      authorities: authorities,
+    });
+
+    // Return success response with JWT token
+    res.json({
+      message: "Register successful",
+      newUsername: newAdmin.username,
+    });
+  } catch (error) {
+    // Pass the error to the error handling middleware
+    next(error);
+  }
+};
+
+const getAllAdmins = async (req, res, next) => {
+  try {
+    // Retrieve all admins from the database
+    const admins = await Admin.find({}, { password: 0 });
+
+    // Check if any admins were found
+    if (!admins || admins.length === 0) {
+      return res.json({ message: "No admins found" });
+    }
+
+    // Return the admins
+    res.json({ admins });
+  } catch (error) {
+    // Pass any errors to the error handling middleware
+    next(error);
+  }
+};
+const updateAdmin = async (req, res, next) => {
+  try {
+    // Extract admin ID and updated authorities from request body
+    const id = req.params.adminId;
+    const { authorities } = req.body;
+    console.log(id);
+
+    // Update authorities for the admin in the database
+    const updatedAdmin = await Admin.findByIdAndUpdate(
+      id,
+      { authorities },
+      { new: true }
+    );
+
+    // Check if admin with the provided ID exists
+    if (!updatedAdmin) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+    //Get username of authorized admin
+    const token = req.headers.authorization.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Create log item
+    await Log.create({
+      process: `Updated Admin ${id}`,
+      doneBy: decoded.username,
+    });
+
+    // Return the updated admin
+    res.json({ success: true, newAuthorities: updatedAdmin.authorities });
+  } catch (error) {
+    // Pass any errors to the error handling middleware
+    next(error);
+  }
+};
+
+module.exports = { loginAdmin, createAdmin, getAllAdmins, updateAdmin };
