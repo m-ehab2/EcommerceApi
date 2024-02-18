@@ -21,7 +21,7 @@ const createCategory = async (req, res, next) => {
     });
 
     // Respond with a success message and the saved category
-    res.status(200).json({
+    res.status(201).json({
       message: "Category created successfully",
       category: savedCategory,
     });
@@ -37,11 +37,11 @@ const getCategories = async (req, res, next) => {
 
     // Check if any categories were found
     if (!categories || categories.length === 0) {
-      res.json({ success: true, categories: [] });
+      res.status(200).json({ success: true, categories: [] });
     }
 
     // Return the categories
-    res.json({
+    res.status(200).json({
       success: true,
       categories: categories,
     });
@@ -82,7 +82,7 @@ const editCategory = async (req, res, next) => {
     }
 
     // Return the updated category
-    res.json({
+    res.status(200).json({
       success: true,
       category: updatedCategory,
     });
@@ -110,7 +110,7 @@ const deleteCategory = async (req, res, next) => {
     }
 
     // Return a success message
-    res.json({
+    res.status(200).json({
       success: true,
       message: "Category deleted successfully",
     });

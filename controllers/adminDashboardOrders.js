@@ -16,11 +16,11 @@ const getAllOrders = async (req, res, next) => {
 
     // Check if any orders were found
     if (!orders || orders.length === 0) {
-      return res.json({ success: true, orders: [] });
+      return res.status(200).json({ success: true, orders: [] });
     }
 
     // Return the orders
-    return res.json({ success: true, orders: orders });
+    return res.status(200).json({ success: true, orders: orders });
   } catch (error) {
     // Pass any errors to the error handling middleware
     return next(error);

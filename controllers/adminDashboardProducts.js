@@ -60,8 +60,8 @@ const createProduct = async (req, res, next) => {
       // Create product document
       const createdProduct = await Product.create(parsedData);
 
-      // Send response with images and product data
-      res.json({ success: true, product: createdProduct });
+      // Send response with product data
+      res.status(200).json({ success: true, product: createdProduct });
     });
   } catch (error) {
     next(error);
@@ -84,11 +84,11 @@ const getAllProducts = async (req, res, next) => {
 
     // Check if any products were found
     if (!products || products.length === 0) {
-      res.json({ success: true, products: [] });
+      res.status(200).json({ success: true, products: [] });
     }
 
     // Return the products
-    res.json({
+    res.status(200).json({
       success: true,
       products: products,
       numberOfProducts: totalCount,
@@ -156,7 +156,7 @@ const updateProduct = async (req, res, next) => {
       );
 
       // Send response with images and product data
-      res.json({ success: true, product: createdProduct });
+      res.status(200).json({ success: true, product: createdProduct });
     });
   } catch (error) {
     next(error);
@@ -168,7 +168,7 @@ const getProduct = async (req, res, next) => {
     const product = await Product.findById({ _id: req.params.productId });
 
     // Return the list of users in the response
-    res.json(product);
+    res.status(200).json(product);
   } catch (error) {
     // If an error occurs, pass it to the error handling middleware
     next(error);
@@ -186,7 +186,7 @@ const freezeProducts = async (req, res, next) => {
     );
 
     // Return the list of updated users in the response
-    res.json(updatedProducts);
+    res.status(200).json(updatedProducts);
   } catch (error) {
     // If an error occurs, pass it to the error handling middleware
     next(error);
@@ -196,6 +196,10 @@ const addTicket = async (req, res, next) => {
   try {
     // Validate ticket input
     const { error } = ticketValidationSchema.validate(req.body);
+    if (error) {
+      throw new Error(error);
+    }
+
     // Extracting data from the request body
     const { title, description, product_ids } = req.body;
 
@@ -258,12 +262,14 @@ const searchProducts = async (req, res, next) => {
 
     // Check if any products were found
     if (!products || products.length === 0) {
-      res.json({ success: true, totalCount: totalCount || 0, products: [] });
+      res
+        .state(200)
+        .json({ success: true, totalCount: totalCount || 0, products: [] });
       return;
     }
 
     // Return the total count of products and the paginated products
-    res.json({
+    res.status(200).json({
       success: true,
       totalCount: totalCount,
       products: products,

@@ -2,13 +2,13 @@ const updateUserSchema = require("../validation/userUpdateValidation");
 const User = require("../models/user");
 
 //User Control Logic
-const viewUsers = async (req, res, next) => {
+const getAllUsers = async (req, res, next) => {
   try {
     // Fetch users from the database
     const user = await User.find({}, { password: 0 });
 
     // Return the list of users in the response
-    res.json(user);
+    res.status(200).json(user);
   } catch (error) {
     // If an error occurs, pass it to the error handling middleware
     next(error);
@@ -23,7 +23,7 @@ const getUser = async (req, res, next) => {
     );
 
     // Return the list of users in the response
-    res.json(user);
+    res.status(200).json(user);
   } catch (error) {
     // If an error occurs, pass it to the error handling middleware
     next(error);
@@ -47,14 +47,14 @@ const searchUsers = async (req, res, next) => {
       searchQuery = { phones: [query] };
     } else {
       // If the query doesn't match any of the expected formats, return an empty result
-      return res.json({ users: [] });
+      return res.status(200).json({ users: [] });
     }
 
     // Execute the query
     const users = await User.find(searchQuery, { password: 0 });
 
     // Return the search results
-    res.json({ users });
+    res.status(200).json({ users });
   } catch (error) {
     // Handle errors
     next(error);
@@ -84,7 +84,7 @@ const editUserProfile = async (req, res, next) => {
     }
 
     // Return the updated user profile
-    res.json({ user: updatedUser });
+    res.status(200).json({ user: updatedUser });
   } catch (error) {
     // Handle errors
     next(error);
@@ -112,7 +112,7 @@ const deactivateUsers = async (req, res, next) => {
     }
 
     // Return a success message or the number of users deactivated
-    res.json({
+    res.json.state(200)({
       message: `${updatedUsers.modifiedCount} users deactivated successfully`,
     });
   } catch (error) {
@@ -139,7 +139,7 @@ const deleteUsers = async (req, res, next) => {
     }
 
     // Return a success message or the number of users deleted
-    res.json({
+    res.status(200).json({
       message: `${deletedUsers.deletedCount} users deleted successfully`,
     });
   } catch (error) {
@@ -149,7 +149,7 @@ const deleteUsers = async (req, res, next) => {
 };
 
 module.exports = {
-  viewUsers,
+  getAllUsers,
   searchUsers,
   editUserProfile,
   deactivateUsers,
