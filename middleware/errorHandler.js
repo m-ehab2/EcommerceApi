@@ -47,7 +47,7 @@ const errorHandler = (err, req, res, next) => {
     console.log(err);
     return res.status(500).json({
       success: false,
-      error: err.message || "Internal Server Error",
+      error: "Un Handled Error: " + (err.message || "Internal Server Error"),
     });
   }
 };
