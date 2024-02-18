@@ -28,7 +28,7 @@ const loginAdmin = async (req, res, next) => {
     );
 
     // Return success response with JWT token
-    res.json({
+    res.status(200).json({
       message: "Login successful",
       token: token,
       username: admin.username,
@@ -73,8 +73,14 @@ const createAdmin = async (req, res, next) => {
       authorities: authorities,
     });
 
+    // Create log item
+    await Log.create({
+      process: `Deleted ${newAdmin.id}`,
+      doneBy: decoded.username,
+    });
+
     // Return success response with JWT token
-    res.json({
+    res.status(201).json({
       message: "Register successful",
       newUsername: newAdmin.username,
     });
@@ -91,16 +97,17 @@ const getAllAdmins = async (req, res, next) => {
 
     // Check if any admins were found
     if (!admins || admins.length === 0) {
-      return res.json({ message: "No admins found" });
+      return res.status(200).json({ message: "No admins found" });
     }
 
     // Return the admins
-    res.json({ admins });
+    res.status(200).json({ admins });
   } catch (error) {
     // Pass any errors to the error handling middleware
     next(error);
   }
 };
+
 const updateAdmin = async (req, res, next) => {
   try {
     // Extract admin ID and updated authorities from request body
@@ -117,8 +124,9 @@ const updateAdmin = async (req, res, next) => {
 
     // Check if admin with the provided ID exists
     if (!updatedAdmin) {
-      return res.status(404).json({ message: "Admin not found" });
+      throw new Error("Admin not found");
     }
+
     //Get username of authorized admin
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -130,11 +138,52 @@ const updateAdmin = async (req, res, next) => {
     });
 
     // Return the updated admin
-    res.json({ success: true, newAuthorities: updatedAdmin.authorities });
+    res
+      .status(200)
+      .json({ success: true, newAuthorities: updatedAdmin.authorities });
   } catch (error) {
     // Pass any errors to the error handling middleware
     next(error);
   }
 };
 
-module.exports = { loginAdmin, createAdmin, getAllAdmins, updateAdmin };
+const deleteAdmin = async (req, res, next) => {
+  try {
+    // Extract admin ID from request parameters
+    const adminId = req.params.adminId;
+
+    // Find admin by ID and delete
+    const deletedAdmin = await Admin.findByIdAndDelete(adminId);
+
+    // Check if admin with the provided ID exists
+    if (!deletedAdmin) {
+      throw new Error("Admin not found");
+    }
+
+    //Get username of authorized admin
+    const token = req.headers.authorization.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Create log item
+    await Log.create({
+      process: `Deleted Admin ${adminId}`,
+      doneBy: decoded.username,
+    });
+
+    // Return success response
+    res
+      .state(200)
+      .json({ success: true, message: "Admin deleted successfully" });
+  } catch (error) {
+    // Pass any errors to the error handling middleware
+    next(error);
+  }
+};
+
+module.exports = {
+  loginAdmin,
+  createAdmin,
+  getAllAdmins,
+  updateAdmin,
+  deleteAdmin,
+};
