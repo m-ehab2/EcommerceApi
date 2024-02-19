@@ -20,7 +20,9 @@ const orderSchema = Joi.object({
     country: Joi.string().required(),
   }).required(),
   paymentMethod: Joi.string().required(),
-  deliveryStatus: Joi.string().required(),
+  deliveryStatus: Joi.string()
+    .valid("pending", "packaging", "shipping", "delivered", "canceled")
+    .required(),
   voucher: Joi.string().allow("").optional(),
   finalPrice: Joi.number().min(0).required(),
 });

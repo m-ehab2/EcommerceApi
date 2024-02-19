@@ -4,13 +4,42 @@ const User = require("../models/user");
 //User Control Logic
 const getAllUsers = async (req, res, next) => {
   try {
+    // Getting query data
+    const { search, gender, state, city, val1, val2, sortBy, order } =
+      req.query;
+
+    let searchQuery = {};
+
+    //assigning search key
+    if (search) {
+      if (search.match(/^[0-9a-fA-F]{24}$/)) {
+        // If the query is a valid MongoDB ID
+        searchQuery._id = search;
+      } else if (search.includes("@")) {
+        // If the query contains '@', assume it's an email
+        searchQuery.email = { $regex: search, $options: "i" };
+      } else if (search.match(/^01\d{9}$/)) {
+        // If the query is a phone number following the pattern "01xxxxxxxxx" without spaces
+        searchQuery.phones = `[${search}]`;
+      }
+    }
+    if (gender) {
+      searchQuery.gender = gender;
+    }
+    if (state) {
+      searchQuery.address_1 = { $elemMatch: { state: state } };
+    }
+    console.log(searchQuery);
+
     // Parse query parameters for pagination
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
     // Fetch users from the database
-    const user = await User.find({}, { password: 0 }).skip(skip).limit(limit);
+    const user = await User.find({ "address_1.state": "Suez" }, { password: 0 })
+      .skip(skip)
+      .limit(limit);
 
     // Return the list of users in the response
     res.status(200).json(user);
@@ -23,11 +52,11 @@ const getAllUsers = async (req, res, next) => {
 const getUser = async (req, res, next) => {
   try {
     // Fetch users from the database
-    const user = await User.findById(
-      { _id: req.params.userId },
-      { password: 0 }
-    );
+    const user = await User.findById(req.params.userId, { password: 0 });
 
+    if (!user) {
+      throw new Error("User not found");
+    }
     // Return the list of users in the response
     res.status(200).json(user);
   } catch (error) {
@@ -39,7 +68,8 @@ const getUser = async (req, res, next) => {
 const searchUsers = async (req, res, next) => {
   try {
     // Get query parameter from request
-    const query = req.query.par;
+    const query = req.query;
+    console.log(query);
 
     // Construct the query based on the provided criteria
     let searchQuery;

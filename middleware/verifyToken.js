@@ -21,7 +21,6 @@ const verifyToken = (req, res, next) => {
 
     // If verification succeeds, the token is valid
     req.user = decoded; // Set the decoded user data on the request object for further use
-    console.log(decoded);
     next();
   } catch (error) {
     // Pass errors to the error handling middleware

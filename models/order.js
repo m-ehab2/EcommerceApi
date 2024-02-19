@@ -23,7 +23,11 @@ const orderSchema = new mongoose.Schema(
       country: { type: String, required: true },
     },
     paymentMethod: { type: String, required: true },
-    deliveryStatus: { type: String, default: "Pending" },
+    deliveryStatus: {
+      type: String,
+      enum: ["pending", "packaging", "shipping", "delivered", "canceled"],
+      default: "open",
+    },
     voucher: { type: String },
     finalPrice: { type: Number, required: true },
   },

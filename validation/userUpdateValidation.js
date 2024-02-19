@@ -5,14 +5,16 @@ const updateUserSchema = Joi.object({
   lastName: Joi.string().min(2).max(50).required(),
   gender: Joi.string().valid("Male", "Female", "Other").required(),
   age: Joi.number().integer().min(0).required(),
-  addresses: Joi.array().items(
-    Joi.object({
-      street: Joi.string().required(),
-      city: Joi.string().required(),
-      state: Joi.string().required(),
-      zip: Joi.string().required(),
-    }).required()
-  ),
+  address_1: Joi.object({
+    street: Joi.string().required(),
+    city: Joi.string().required(),
+    state: Joi.string().required(),
+  }),
+  address_2: Joi.object({
+    street: Joi.string(),
+    city: Joi.string(),
+    state: Joi.string(),
+  }),
   phones: Joi.array().items(Joi.number()).required(),
 });
 

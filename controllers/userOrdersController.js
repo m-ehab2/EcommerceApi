@@ -1,5 +1,6 @@
 const validateSchema = require("../helpers/validateSchema");
 const Order = require("../models/order");
+const Product = require("../models/product");
 const User = require("../models/user");
 const Voucher = require("../models/voucher");
 const orderSchema = require("../validation/orderCreationSchema");
@@ -11,7 +12,7 @@ const createOrder = async (req, res, next) => {
 
     // Getting user id from the request - assigned at middleware
     const user = req.user.id;
-    console.log(user);
+
     // Extract order details from request body
     const {
       trackingNumber,
@@ -22,7 +23,6 @@ const createOrder = async (req, res, next) => {
       voucher,
       finalPrice,
     } = req.body;
-    let voucherToUpdate = {};
 
     // Create a new order document
     const order = await Order.create({
@@ -49,7 +49,7 @@ const createOrder = async (req, res, next) => {
     await User.findByIdAndUpdate(user, { $push: { orders: order._id } });
 
     // Return the created order
-    res.status(201).json({ success: true, order: order });
+    res.status(201).json({ success: true, Order: order });
   } catch (error) {
     // Handle any unexpected errors
     next(error);

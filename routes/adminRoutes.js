@@ -59,13 +59,6 @@ router.get(
   adminUserController.getUser
 );
 
-// Route to search, filter, and sort users (bonus)
-router.get(
-  "/users/search",
-  checkAdminAuthorities(["users"]),
-  adminUserController.searchUsers
-);
-
 // Route to edit user profiles
 router.patch(
   "/users/update/:userId",
@@ -204,6 +197,20 @@ router.get(
   "/orders",
   checkAdminAuthorities(["orders"]),
   adminOrdersController.getAllOrders
+);
+
+// Route to get one order
+router.get(
+  "/orders/:orderId",
+  checkAdminAuthorities(["orders"]),
+  adminOrdersController.getOneOrder
+);
+
+// Route to get all orders
+router.patch(
+  "/orders/:orderId",
+  checkAdminAuthorities(["orders"]),
+  adminOrdersController.updateOrderStatus
 );
 
 module.exports = router;

@@ -164,7 +164,7 @@ const updateProduct = async (req, res, next) => {
 };
 const getProduct = async (req, res, next) => {
   try {
-    // Fetch users from the database
+    // Fetch product from the database
     const product = await Product.findById({ _id: req.params.productId });
 
     // Return the list of users in the response
@@ -174,6 +174,7 @@ const getProduct = async (req, res, next) => {
     next(error);
   }
 };
+
 const freezeProducts = async (req, res, next) => {
   try {
     // Get Id array from req body

@@ -9,13 +9,16 @@ const userSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     active: { type: Boolean, required: true, default: true },
-    addresses: [
-      {
-        street: { type: String, required: true },
-        city: { type: String, required: true },
-        state: { type: String, required: true },
-      },
-    ],
+    address_1: {
+      street: { type: String },
+      city: { type: String },
+      state: { type: String },
+    },
+    address_2: {
+      street: { type: String },
+      city: { type: String },
+      state: { type: String },
+    },
     phones: [{ type: Number }],
     cart: [
       {

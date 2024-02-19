@@ -5,10 +5,15 @@ const userRoutes = require("./routes/userRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const errorHandler = require("./middleware/errorHandler");
 const morgan = require("morgan");
+const cors = require("cors");
+
 require("dotenv").config();
 
 // Create an instance of Express
 const app = express();
+
+// Use CORS policy
+app.use(cors());
 
 // Parse body as JSON
 app.use(express.json());

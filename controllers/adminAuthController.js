@@ -4,6 +4,7 @@ const { createTokenAdmin } = require("../utilities/tokenTools");
 const adminValidationSchema = require("../validation/adminCreationValidation");
 const jwt = require("jsonwebtoken");
 const Log = require("../models/log");
+
 const loginAdmin = async (req, res, next) => {
   try {
     const { username, password } = req.body;
