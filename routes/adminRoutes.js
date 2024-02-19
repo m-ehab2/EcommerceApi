@@ -73,9 +73,16 @@ router.patch(
   adminUserController.deactivateUsers
 );
 
+// Route to deactivate user accounts
+router.patch(
+  "/users/activate",
+  checkAdminAuthorities(["users"]),
+  adminUserController.activateUsers
+);
+
 // Route to delete user accounts
-router.delete(
-  "/users",
+router.put(
+  "/users/delete",
   checkAdminAuthorities(["users"]),
   adminUserController.deleteUsers
 );

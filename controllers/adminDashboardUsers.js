@@ -8,9 +8,10 @@ const getAllUsers = async (req, res, next) => {
     const { search, gender, state, city, val1, val2, sortBy, order } =
       req.query;
 
+    // Setting search query as an empty object for dynamic searching
     let searchQuery = {};
 
-    //assigning search key
+    // Assigning search key
     if (search) {
       if (search.match(/^[0-9a-fA-F]{24}$/)) {
         // If the query is a valid MongoDB ID
@@ -21,13 +22,52 @@ const getAllUsers = async (req, res, next) => {
       } else if (search.match(/^01\d{9}$/)) {
         // If the query is a phone number following the pattern "01xxxxxxxxx" without spaces
         searchQuery.phones = `[${search}]`;
+      } else {
+        // if the query is a string not matching the patterns match it with last name or first name
+        searchQuery["$and"] = []; // we create an and to merge it with city and state queries
+        searchQuery["$and"].push({
+          $or: [{ firstName: search }, { lastName: search }],
+        });
       }
     }
+    // Checking for different search parameters and adding them to the dynamic query
     if (gender) {
       searchQuery.gender = gender;
     }
-    if (state) {
-      searchQuery.address_1 = { $elemMatch: { state: state } };
+    if (state || city) {
+      if (searchQuery["$and"]) {
+        if (state) {
+          searchQuery["$and"].push({
+            $or: [{ "address_1.state": state }, { "address_2.state": state }],
+          });
+        }
+        if (city) {
+          searchQuery["$and"].push({
+            $or: [{ "address_1.city": city }, { "address_2.city": city }],
+          });
+        }
+      } else {
+        searchQuery["$or"] = [];
+        if (state) {
+          searchQuery["$or"].push(
+            { "address_1.state": state },
+            { "address_2.state": state }
+          );
+        }
+        if (city) {
+          searchQuery["$or"].push(
+            { "address_1.city": city },
+            { "address_2.city": city }
+          );
+        }
+      }
+    }
+
+    if (val1 && val2) {
+      searchQuery.age = {
+        $gt: Math.min(val1, val2),
+        $lt: Math.max(val1, val2),
+      };
     }
     console.log(searchQuery);
 
@@ -37,7 +77,7 @@ const getAllUsers = async (req, res, next) => {
     const skip = (page - 1) * limit;
 
     // Fetch users from the database
-    const user = await User.find({ "address_1.state": "Suez" }, { password: 0 })
+    const user = await User.find(searchQuery, { password: 0 })
       .skip(skip)
       .limit(limit);
 
@@ -61,39 +101,6 @@ const getUser = async (req, res, next) => {
     res.status(200).json(user);
   } catch (error) {
     // If an error occurs, pass it to the error handling middleware
-    next(error);
-  }
-};
-
-const searchUsers = async (req, res, next) => {
-  try {
-    // Get query parameter from request
-    const query = req.query;
-    console.log(query);
-
-    // Construct the query based on the provided criteria
-    let searchQuery;
-    if (query.match(/^[0-9a-fA-F]{24}$/)) {
-      // If the query is a valid MongoDB ID
-      searchQuery = { _id: query };
-    } else if (query.includes("@")) {
-      // If the query contains '@', assume it's an email
-      searchQuery = { email: query };
-    } else if (query.match(/^01\d{9}$/)) {
-      // If the query is a phone number following the pattern "01xxxxxxxxx" without spaces
-      searchQuery = { phones: [query] };
-    } else {
-      // If the query doesn't match any of the expected formats, return an empty result
-      return res.status(200).json({ users: [] });
-    }
-
-    // Execute the query
-    const users = await User.find(searchQuery, { password: 0 });
-
-    // Return the search results
-    res.status(200).json({ users });
-  } catch (error) {
-    // Handle errors
     next(error);
   }
 };
@@ -151,8 +158,39 @@ const deactivateUsers = async (req, res, next) => {
     }
 
     // Return a success message or the number of users deactivated
-    res.json.state(200)({
+    res.status(200).json({
       message: `${updatedUsers.modifiedCount} users deactivated successfully`,
+    });
+  } catch (error) {
+    // Handle errors
+    next(error);
+  }
+};
+
+const activateUsers = async (req, res, next) => {
+  try {
+    // Get array of user ids from request body
+    const userIds = req.body.userIds;
+
+    // Check if userIds is not an array or is empty
+    if (!Array.isArray(userIds) || userIds.length === 0) {
+      throw new Error("User IDs array is required");
+    }
+
+    // Update all users in the database to deactivate their accounts
+    const updatedUsers = await User.updateMany(
+      { _id: { $in: userIds } },
+      { active: true }
+    );
+
+    // Check if any users were updated
+    if (updatedUsers.modifiedCount === 0) {
+      throw new Error("No users found to deactivate");
+    }
+
+    // Return a success message or the number of users deactivated
+    res.status(200).json({
+      message: `${updatedUsers.modifiedCount} users activated successfully`,
     });
   } catch (error) {
     // Handle errors
@@ -190,9 +228,9 @@ const deleteUsers = async (req, res, next) => {
 
 module.exports = {
   getAllUsers,
-  searchUsers,
   editUserProfile,
   deactivateUsers,
   deleteUsers,
   getUser,
+  activateUsers,
 };
