@@ -3,7 +3,7 @@ const Joi = require("joi");
 const errorHandler = (err, req, res, next) => {
   console.error(err);
 
-  if (err instanceof Joi.ValidationError) {
+  if (err instanceof Joi.ValidationError || err.message === "Invalid Schema") {
     return res.status(422).json({
       success: false,
       error: "Invalid Schema",
@@ -18,7 +18,8 @@ const errorHandler = (err, req, res, next) => {
     err.message === "User IDs array is required" ||
     err.message === "jwt expired" ||
     err.message === "Invalid credentials" ||
-    err.message === "Category not found"
+    err.message === "Category not found" ||
+    err.message === "Voucher not found"
   ) {
     return res.status(404).json({
       success: false,
@@ -34,6 +35,11 @@ const errorHandler = (err, req, res, next) => {
     return res.status(400).json({
       success: false,
       error: "Invalid Id",
+    });
+  } else if (err.message === "Invalid email or password") {
+    return res.status(401).json({
+      success: false,
+      error: "Invalid Email or Password",
     });
   } else if (
     err.message === "Email is already registered" ||

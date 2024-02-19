@@ -3,14 +3,8 @@ const mongoose = require("mongoose");
 // Define the ticket schema
 const ticketSchema = new mongoose.Schema(
   {
-    title: {
-      type: String,
-      required: true,
-    },
-    description: {
-      type: String,
-      required: true,
-    },
+    title: { type: String, required: true },
+    description: { type: String, required: true },
     product_ids: [
       {
         type: String,

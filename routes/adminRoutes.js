@@ -1,10 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const adminAuthController = require("../controllers/adminAuthController");
-const adminUserController = require("../controllers/adminDashboardUser");
+const adminUserController = require("../controllers/adminDashboardUsers");
 const adminCatController = require("../controllers/adminDashboardCategories");
 const adminProductsController = require("../controllers/adminDashboardProducts");
 const adminOrdersController = require("../controllers/adminDashboardOrders");
+const adminVoucherController = require("../controllers/adminDashboardVouchers");
 const checkAdminAuthorities = require("../middleware/abac");
 
 // Admin Authentication Routs
@@ -35,13 +36,20 @@ router.patch(
   adminAuthController.updateAdmin
 );
 
+// Route to delete an admin
+router.delete(
+  "/admins/:adminId",
+  checkAdminAuthorities(["admin"]),
+  adminAuthController.deleteAdmin
+);
+
 //User Control Routes
 
 // Route to view a list of users
 router.get(
   "/users",
   checkAdminAuthorities(["users"]),
-  adminUserController.viewUsers
+  adminUserController.getAllUsers
 );
 
 //Route to get one user
@@ -161,16 +169,35 @@ router.post(
 );
 
 // Voucher Control Routes
-router.post("/vouchers", checkAdminAuthorities(["vouchers"]));
+
+// Route to create a voucher
+router.post(
+  "/vouchers",
+  checkAdminAuthorities(["vouchers"]),
+  adminVoucherController.createVoucher
+);
+
+//Route to get all vouchers
+router.get(
+  "/vouchers",
+  checkAdminAuthorities(["vouchers"]),
+  adminVoucherController.getAllVouchers
+);
+
+//Route to get one voucher
+router.get(
+  "/vouchers/:voucherId",
+  checkAdminAuthorities(["vouchers"]),
+  adminVoucherController.getVoucher
+);
+
+router.patch(
+  "/vouchers/:voucherId",
+  checkAdminAuthorities(["vouchers"]),
+  adminVoucherController.updateVoucher
+);
 
 // Orders Control Routes
-
-// Route to create an order
-router.post(
-  "/orders",
-  checkAdminAuthorities(["orders"]),
-  adminOrdersController.createOrder
-);
 
 // Route to get all orders
 router.get(

@@ -13,7 +13,6 @@ const orderSchema = Joi.object({
     )
     .min(1)
     .required(),
-  user: Joi.string().required(),
   address: Joi.object({
     street: Joi.string().required(),
     city: Joi.string().required(),

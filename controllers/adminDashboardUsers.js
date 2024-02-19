@@ -4,8 +4,13 @@ const User = require("../models/user");
 //User Control Logic
 const getAllUsers = async (req, res, next) => {
   try {
+    // Parse query parameters for pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
     // Fetch users from the database
-    const user = await User.find({}, { password: 0 });
+    const user = await User.find({}, { password: 0 }).skip(skip).limit(limit);
 
     // Return the list of users in the response
     res.status(200).json(user);
@@ -14,6 +19,7 @@ const getAllUsers = async (req, res, next) => {
     next(error);
   }
 };
+
 const getUser = async (req, res, next) => {
   try {
     // Fetch users from the database
@@ -29,6 +35,7 @@ const getUser = async (req, res, next) => {
     next(error);
   }
 };
+
 const searchUsers = async (req, res, next) => {
   try {
     // Get query parameter from request
@@ -60,6 +67,7 @@ const searchUsers = async (req, res, next) => {
     next(error);
   }
 };
+
 const editUserProfile = async (req, res, next) => {
   try {
     // Get user id and updated info from request
@@ -90,6 +98,7 @@ const editUserProfile = async (req, res, next) => {
     next(error);
   }
 };
+
 const deactivateUsers = async (req, res, next) => {
   try {
     // Get array of user ids from request body
@@ -120,6 +129,7 @@ const deactivateUsers = async (req, res, next) => {
     next(error);
   }
 };
+
 const deleteUsers = async (req, res, next) => {
   try {
     // Get array of user ids from request body
