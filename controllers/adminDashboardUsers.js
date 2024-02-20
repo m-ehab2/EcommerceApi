@@ -21,7 +21,7 @@ const getAllUsers = async (req, res, next) => {
         searchQuery.email = { $regex: search, $options: "i" };
       } else if (search.match(/^01\d{9}$/)) {
         // If the query is a phone number following the pattern "01xxxxxxxxx" without spaces
-        searchQuery.phones = `[${search}]`;
+        searchQuery.phones = [search];
       } else {
         // if the query is a string not matching the patterns match it with last name or first name
         searchQuery["$and"] = []; // we create an and to merge it with city and state queries
@@ -71,18 +71,53 @@ const getAllUsers = async (req, res, next) => {
     }
     console.log(searchQuery);
 
+    const sortQuery = {};
+    if (sortBy && (order ? order : "desc")) {
+      if (sortBy === "orders") {
+        sortQuery["orders"] = order === "desc" ? -1 : 1;
+      } else {
+        sortQuery[sortBy] = order === "desc" ? -1 : 1; // order can be 'asc' or 'desc'
+      }
+    } else {
+      // If sortBy or order is not provided, you can set some default sorting criteria here
+      sortQuery["firstName"] = -1; // sorting by firstName field in descending order
+    }
+    console.log(sortQuery);
+
     // Parse query parameters for pagination
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
     // Fetch users from the database
-    const user = await User.find(searchQuery, { password: 0 })
-      .skip(skip)
-      .limit(limit);
+    const users = await User.aggregate([
+      {
+        $match: searchQuery,
+      },
+      {
+        $addFields: {
+          orders: { $size: "$orders" }, // Add a new field representing the length of the array
+        },
+      },
+      {
+        $sort: sortQuery,
+      },
+      {
+        $skip: skip,
+      },
+      {
+        $limit: limit,
+      },
+    ]);
 
-    // Return the list of users in the response
-    res.status(200).json(user);
+    // // Fetch users from the database
+    // const user = await User.find(searchQuery, { password: 0 })
+    //   .sort(sortQuery)
+    //   .skip(skip)
+    //   .limit(limit);
+
+    // // Return the list of users in the response
+    res.status(200).json(users);
   } catch (error) {
     // If an error occurs, pass it to the error handling middleware
     next(error);
