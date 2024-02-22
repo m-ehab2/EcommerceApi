@@ -26,7 +26,10 @@ const getAllUsers = async (req, res, next) => {
         // if the query is a string not matching the patterns match it with last name or first name
         searchQuery["$and"] = []; // we create an and to merge it with city and state queries
         searchQuery["$and"].push({
-          $or: [{ firstName: search }, { lastName: search }],
+          $or: [
+            { firstName: { $regex: search, $options: "i" } },
+            { lastName: { $regex: search, $options: "i" } },
+          ],
         });
       }
     }
@@ -34,20 +37,25 @@ const getAllUsers = async (req, res, next) => {
     if (gender) {
       searchQuery.gender = gender;
     }
+    // If the search query has a city or a state
     if (state || city) {
+      // We check if an and query has been selected already
       if (searchQuery["$and"]) {
+        // We assert a parameter of and to be the or of address1.state or address2.state
         if (state) {
           searchQuery["$and"].push({
             $or: [{ "address_1.state": state }, { "address_2.state": state }],
           });
         }
+        // We assert a parameter of and to be the or of address1.city or address2.city
         if (city) {
           searchQuery["$and"].push({
             $or: [{ "address_1.city": city }, { "address_2.city": city }],
           });
         }
       } else {
-        searchQuery["$or"] = [];
+        // If an and key hasn`t been added to the query we add it
+        searchQuery["$and"] = [];
         if (state) {
           searchQuery["$or"].push(
             { "address_1.state": state },
@@ -62,59 +70,55 @@ const getAllUsers = async (req, res, next) => {
         }
       }
     }
-
+    // Check if the query has age values or not
     if (val1 && val2) {
       searchQuery.age = {
         $gt: Math.min(val1, val2),
         $lt: Math.max(val1, val2),
       };
     }
-    console.log(searchQuery);
 
     const sortQuery = {};
     if (sortBy && (order ? order : "desc")) {
       if (sortBy === "orders") {
-        sortQuery["orders"] = order === "desc" ? -1 : 1;
+        sortQuery["orders"] = order === "desc" ? -1 : 1; // if i am sorting by orders the sorting object is modified
       } else {
         sortQuery[sortBy] = order === "desc" ? -1 : 1; // order can be 'asc' or 'desc'
       }
     } else {
-      // If sortBy or order is not provided, you can set some default sorting criteria here
+      // If sortBy or order is not provided some default criteria is provided
       sortQuery["firstName"] = -1; // sorting by firstName field in descending order
     }
-    console.log(sortQuery);
 
     // Parse query parameters for pagination
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    // Fetch users from the database
+    // Fetch users from the database using aggregation
     const users = await User.aggregate([
       {
+        // Match documents to the search query
         $match: searchQuery,
       },
       {
+        // Add a new field for orders array length
         $addFields: {
-          orders: { $size: "$orders" }, // Add a new field representing the length of the array
+          orders: { $size: "$orders" }, // Add a new field representing the length of the orders array
         },
       },
       {
+        // Sort my query based on the sorting provided
         $sort: sortQuery,
       },
       {
+        // Modify the results for pagination
         $skip: skip,
       },
       {
         $limit: limit,
       },
     ]);
-
-    // // Fetch users from the database
-    // const user = await User.find(searchQuery, { password: 0 })
-    //   .sort(sortQuery)
-    //   .skip(skip)
-    //   .limit(limit);
 
     // // Return the list of users in the response
     res.status(200).json(users);
@@ -158,13 +162,13 @@ const editUserProfile = async (req, res, next) => {
       projection: { password: 0 },
     });
 
-    // Check if the user was found and updated
+    // // Check if the user was found and updated
     if (!updatedUser) {
       throw new Error("User not found");
     }
 
     // Return the updated user profile
-    res.status(200).json({ user: updatedUser });
+    res.status(200).json({ sucess: true, user: updatedUser });
   } catch (error) {
     // Handle errors
     next(error);
