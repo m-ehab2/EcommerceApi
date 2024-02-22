@@ -15,6 +15,11 @@ const checkAdminAuthorities =
       // Find admin user by decoded id
       const admin = await Admin.findById(decoded.id);
 
+      // If admin is not matched with a token ID throw the unauthorized error
+      if (!admin) {
+        throw new Error("Unauthorized");
+      }
+
       // Check if admin authorities meet the required authorities
       const hasRequiredAuthorities = requiredAuthorities.every(
         (authority) => admin.authorities[authority]
