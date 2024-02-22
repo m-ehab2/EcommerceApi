@@ -3,7 +3,7 @@ const Joi = require("joi");
 const errorHandler = (err, req, res, next) => {
   console.error(err);
 
-  if (err instanceof Joi.ValidationError || err.message === "Invalid Schema") {
+  if (err instanceof Joi.ValidationError) {
     return res.status(422).json({
       success: false,
       error: "Invalid Schema",
@@ -14,12 +14,24 @@ const errorHandler = (err, req, res, next) => {
       error: "Unauthorized Access",
     });
   } else if (
+    err.message === "Invalid Schema" ||
+    err.message === "Product IDs array is required" ||
+    err.message === "Expiry date is older than current date"
+  ) {
+    return res.status(422).json({
+      success: false,
+      error: err.message,
+    });
+  } else if (
     err.message === "User not found" ||
+    err.message === "Product not found" ||
     err.message === "User IDs array is required" ||
+    err.message === "No products found to delete" ||
     err.message === "jwt expired" ||
     err.message === "Invalid credentials" ||
     err.message === "Category not found" ||
-    err.message === "Voucher not found"
+    err.message === "Voucher not found" ||
+    err.message === "Invalid Category"
   ) {
     return res.status(404).json({
       success: false,
