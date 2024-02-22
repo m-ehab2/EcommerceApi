@@ -2,30 +2,39 @@ const Voucher = require("../models/voucher");
 const voucherValidationSchema = require("../validation/voucherCreationSchema");
 const jwt = require("jsonwebtoken");
 const Log = require("../models/log");
+const validateSchema = require("../helpers/validateSchema");
 
 const createVoucher = async (req, res, next) => {
   try {
-    // Validate request body
-    const { error } = voucherValidationSchema.validate(req.body);
-    if (error) {
-      throw error;
-    }
-    const token = req.headers.authorization.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Create a new voucher object
-    const voucher = await Voucher.create({
-      code: req.body.code,
+    // Get data from the request body
+    const voucher = {
+      code: req.body.voucherCode,
       discount: req.body.discount,
+      type: req.body.type,
       expiryDate: req.body.expiryDate,
       maxUsage: req.body.maxUsage,
-      createdBy: decoded.id,
-    });
+    };
+
+    // Validate request body
+    validateSchema(voucherValidationSchema, voucher);
+
+    if (new Date(voucher.expiryDate) <= new Date()) {
+      throw new Error("Expiry date is older than current date");
+    }
+
+    // Get admin id
+    const token = req.headers.authorization.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    voucher.createdBy = decoded.id;
+
+    // Create a new voucher object
+    const createdVoucher = await Voucher.create(voucher);
 
     // Return success response
-    res
-      .status(201)
-      .json({ message: "Voucher created successfully", voucher: voucher });
+    res.status(201).json({
+      message: "Voucher created successfully",
+      voucher: createdVoucher,
+    });
   } catch (error) {
     // Pass any errors to the error handling middleware
     next(error);
