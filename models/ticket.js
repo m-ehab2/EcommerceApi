@@ -5,15 +5,22 @@ const ticketSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
     description: { type: String, required: true },
-    product_ids: [
+    type: { type: String, required: true },
+    item_ids: [
       {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
       },
     ],
     state: {
       type: String,
       enum: ["open", "in progress", "resolved", "closed"],
       default: "open",
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Admin",
+      required: true,
     },
   },
   {
