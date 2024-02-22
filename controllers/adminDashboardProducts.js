@@ -283,9 +283,6 @@ const freezeProducts = async (req, res, next) => {
     // Get Id array from req body
     const productIds = req.body.productIds;
 
-    console.log(req.body);
-
-    console.log(productIds);
     // update all posts in Id array
     const updatedProducts = await Product.updateMany(
       { _id: { $in: productIds } },
