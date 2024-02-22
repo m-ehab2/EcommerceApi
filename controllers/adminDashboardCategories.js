@@ -51,27 +51,53 @@ const getCategories = async (req, res, next) => {
   }
 };
 
+const getOneCategory = async (req, res, next) => {
+  try {
+    // Get category name from params
+    const name = req.params.categoryName;
+
+    // Retrieve all categories from the database
+    const category = await Category.findOne({ name });
+
+    // Check if any categories were found
+    if (!category) {
+      throw new Error("Category not found");
+    }
+
+    // Return the categories
+    res.status(200).json({
+      success: true,
+      category: category,
+    });
+  } catch (error) {
+    // Pass any errors to the error handling middleware
+    next(error);
+  }
+};
+
 const editCategory = async (req, res, next) => {
   try {
     // Extract category ID and updated data from request body
-    const categoryId = req.params.categoryId;
+    const categoryName = req.params.categoryName;
     const updatedData = req.body;
+    console.log(categoryName, req.body);
 
     // Validate request body against the Joi schema
-    const { error } = categoryCreationSchema.validate(updatedData);
-    if (error) {
+    const valid =
+      updatedData.description && updatedData.subCategories.length > 0;
+    if (!valid) {
       // If validation fails, throw a validation error
-      throw error;
+      throw new Error("Invalid Schema");
     }
 
     // Check if category ID is provided
-    if (!categoryId) {
+    if (!categoryName) {
       throw new Error("Category ID is required");
     }
 
     // Find the category by ID and update it with the provided data
-    const updatedCategory = await Category.findByIdAndUpdate(
-      categoryId,
+    const updatedCategory = await Category.findOneAndUpdate(
+      { name: categoryName },
       updatedData,
       { new: true }
     );
@@ -124,4 +150,5 @@ module.exports = {
   getCategories,
   editCategory,
   deleteCategory,
+  getOneCategory,
 };
