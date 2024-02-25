@@ -24,6 +24,23 @@ const createOrder = async (req, res, next) => {
       finalPrice,
     } = req.body;
 
+    // Checking for duplicate tracking number
+    const oldOrder = await Order.findOne({ trackingNumber: trackingNumber });
+    if (oldOrder) {
+      const error = new Error("Duplicate Order");
+      error.code = 11000;
+      throw error;
+    }
+
+    // Checking for voucher and updating usage status
+    if (voucher) {
+      voucherToUpdate = await Voucher.findOneAndUpdate(
+        { code: voucher },
+        { $inc: { currentUsage: 1 } },
+        { new: true }
+      );
+    }
+
     // Create a new order document
     const order = await Order.create({
       trackingNumber,
@@ -36,20 +53,11 @@ const createOrder = async (req, res, next) => {
       voucher,
     });
 
-    // Checking for voucher and updating usage status
-    if (voucher) {
-      voucherToUpdate = await Voucher.findOneAndUpdate(
-        { code: voucher },
-        { $inc: { currentUsage: 1 } },
-        { new: true }
-      );
-    }
-
     // Adding the order to user
     await User.findByIdAndUpdate(user, { $push: { orders: order._id } });
 
     // Return the created order
-    res.status(201).json({ success: true, Order: order });
+    res.status(201).json({ success: true, Order: req.body });
   } catch (error) {
     // Handle any unexpected errors
     next(error);

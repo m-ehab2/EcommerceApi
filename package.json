@@ -11,10 +11,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@bytescale/sdk": "^3.31.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.1",
     "express": "^4.18.2",
+    "firebase": "^10.8.0",
     "formidable": "^3.5.1",
     "imgbb-uploader": "^1.5.1",
     "joi": "^17.12.1",
@@ -22,6 +24,6 @@
     "mongodb": "^6.3.0",
     "mongoose": "^8.1.1",
     "morgan": "^1.10.0",
-    "nodemon": "^3.0.3"
+    "node-fetch": "^3.3.2"
   }
 }

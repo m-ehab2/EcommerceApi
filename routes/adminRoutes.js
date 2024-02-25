@@ -103,9 +103,16 @@ router.get(
   adminCatController.getCategories
 );
 
+// Get one category
+router.get(
+  "/categories/:categoryName",
+  checkAdminAuthorities(["categories"]),
+  adminCatController.getOneCategory
+);
+
 // Update a category
-router.patch(
-  "/categories/update/:categoryId",
+router.put(
+  "/categories/:categoryName",
   checkAdminAuthorities(["categories"]),
   adminCatController.editCategory
 );
@@ -133,13 +140,6 @@ router.get(
   adminProductsController.getAllProducts
 );
 
-// Route to query products
-router.get(
-  "/products/search",
-  checkAdminAuthorities(["products"]),
-  adminProductsController.searchProducts
-);
-
 // Route to get one product
 router.get(
   "/products/:productId",
@@ -161,11 +161,25 @@ router.patch(
   adminProductsController.freezeProducts
 );
 
-// Route to freeze products
+// Route to unfreeze products
+router.patch(
+  "/products/unfreeze",
+  checkAdminAuthorities(["products"]),
+  adminProductsController.unFreezeProducts
+);
+
+// Route to add tickets to products
 router.post(
   "/products/ticket",
   checkAdminAuthorities(["products"]),
   adminProductsController.addTicket
+);
+
+// Route to delete products
+router.put(
+  "/products",
+  checkAdminAuthorities(["products"]),
+  adminProductsController.deleteProducts
 );
 
 // Voucher Control Routes

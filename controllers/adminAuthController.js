@@ -12,13 +12,13 @@ const loginAdmin = async (req, res, next) => {
     // Find user by email
     const admin = await Admin.findOne({ username });
     if (!admin) {
-      throw "Invalid email or password";
+      throw new Error("Invalid email or password");
     }
 
     // Compare passwords
     const isPasswordValid = await bcrypt.compare(password, admin.password);
     if (!isPasswordValid) {
-      throw "Invalid email or password";
+      throw new Error("Invalid email or password");
     }
 
     // Generate JWT token
@@ -114,7 +114,6 @@ const updateAdmin = async (req, res, next) => {
     // Extract admin ID and updated authorities from request body
     const id = req.params.adminId;
     const { authorities } = req.body;
-    console.log(id);
 
     // Update authorities for the admin in the database
     const updatedAdmin = await Admin.findByIdAndUpdate(

@@ -8,7 +8,6 @@ const orderSchema = Joi.object({
       Joi.object({
         product: Joi.string().required(),
         quantity: Joi.number().integer().min(1).required(),
-        price: Joi.number().min(0).required(),
       })
     )
     .min(1)
@@ -17,12 +16,8 @@ const orderSchema = Joi.object({
     street: Joi.string().required(),
     city: Joi.string().required(),
     state: Joi.string().required(),
-    country: Joi.string().required(),
   }).required(),
   paymentMethod: Joi.string().required(),
-  deliveryStatus: Joi.string()
-    .valid("pending", "packaging", "shipping", "delivered", "canceled")
-    .required(),
   voucher: Joi.string().allow("").optional(),
   finalPrice: Joi.number().min(0).required(),
 });
