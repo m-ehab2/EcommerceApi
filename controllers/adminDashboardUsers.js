@@ -90,6 +90,9 @@ const getAllUsers = async (req, res, next) => {
       sortQuery["firstName"] = -1; // sorting by firstName field in descending order
     }
 
+    // Query the search query to get the count of documents
+    const totalCount = await User.countDocuments(searchQuery);
+
     // Parse query parameters for pagination
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -121,7 +124,7 @@ const getAllUsers = async (req, res, next) => {
     ]);
 
     // // Return the list of users in the response
-    res.status(200).json(users);
+    res.status(200).json({ users, totalCount });
   } catch (error) {
     // If an error occurs, pass it to the error handling middleware
     next(error);
@@ -168,7 +171,7 @@ const editUserProfile = async (req, res, next) => {
     }
 
     // Return the updated user profile
-    res.status(200).json({ sucess: true, user: updatedUser });
+    res.status(200).json({ success: true, user: updatedUser });
   } catch (error) {
     // Handle errors
     next(error);
