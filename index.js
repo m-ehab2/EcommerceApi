@@ -29,7 +29,7 @@ app.use("/api/dashboard", adminRoutes);
 app.use(errorHandler);
 
 //Connect To Db
-connect(process.env.URI);
+connect(process.env.URI_Cloud);
 
 // Start the server
 const port = process.env.PORT || 3000;
