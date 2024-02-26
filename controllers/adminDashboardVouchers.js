@@ -69,17 +69,18 @@ const updateVoucher = async (req, res, next) => {
       throw new Error("Voucher not found");
     }
 
-    // Validate request body
-    if (!req.body.active || !req.body.maxUsage) {
-      throw new Error("Invalid Schema");
+    // Get values from request body
+    const { discount, type, expiryDate, maxUsage } = req.body;
+
+    // Validate expiryDate
+    if (new Date(expiryDate) <= new Date()) {
+      throw new Error("Expiry date is older than current date");
     }
+
     // Update the voucher
     const updatedVoucher = await Voucher.findByIdAndUpdate(
       voucher.id,
-      {
-        active: req.body.active,
-        maxUsage: req.body.maxUsage,
-      },
+      { discount, type, expiryDate, maxUsage },
       { new: true }
     );
 
