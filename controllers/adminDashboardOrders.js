@@ -1,32 +1,86 @@
+const validateSchema = require("../helpers/validateSchema");
 const Order = require("../models/order");
+const Product = require("../models/product");
+const Ticket = require("../models/ticket");
+const jwt = require("jsonwebtoken");
+const ticketCreationSchema = require("../validation/ticketCreationValidation");
+require("dotenv").config();
 
 const getAllOrders = async (req, res, next) => {
   try {
-    //Get page number from request params
-    const pageNumber = parseInt(req.query.p, 10) || 1;
-    const numberPerPage = 10;
+    const {
+      page,
+      limit,
+      sortBy,
+      order,
+      trackingNumber,
+      userId,
+      timePeriod,
+      status,
+      city,
+      price1,
+      price2,
+      itemsNumber1,
+      itemsNumber2,
+    } = req.query;
+
+    // Parse page and limit
+    const pageNumber = parseInt(page, 10) || 1;
+    const numberPerPage = parseInt(limit) || 10;
     const skipItems = (pageNumber - 1) * numberPerPage;
 
-    // Retrieve total count of products (unpaginated)
-    const totalCount = await Order.countDocuments({});
+    // Construct query
+    const query = {};
 
-    // Retrieve all orders from the database
-    const orders = await Order.find({})
-      .populate({
-        path: "products.product",
-        model: "Product",
-      })
-      .populate({
-        path: "user",
-        model: "User",
-        select: " firstName lastName email",
-      })
+    if (trackingNumber) {
+      query.trackingNumber = { $regex: trackingNumber, $options: "i" };
+    }
+
+    if (userId) {
+      query.user = userId;
+    }
+
+    if (timePeriod) {
+      // Implement time period filtering based on your requirement
+    }
+
+    if (status) {
+      query.deliveryStatus = status;
+    }
+
+    if (city) {
+      query["address.city"] = city;
+    }
+
+    if (price1 && price2) {
+      query.finalPrice = { $gte: price1, $lte: price2 };
+    } else if (price1) {
+      query.finalPrice = { $gte: price1 };
+    } else if (price2) {
+      query.finalPrice = { $lte: price2 };
+    }
+
+    if (itemsNumber1 && itemsNumber2) {
+      query.totalItems = { $gte: itemsNumber1, $lte: itemsNumber2 };
+    } else if (itemsNumber1) {
+      query.totalItems = { $gte: itemsNumber1 };
+    } else if (itemsNumber2) {
+      query.totalItems = { $lte: itemsNumber2 };
+    }
+
+    // Retrieve total count of products (unpaginated)
+    const totalCount = await Order.countDocuments(query);
+
+    // Retrieve orders based on query
+    const orders = await Order.find(query)
+      .sort({ [sortBy]: order === "desc" ? -1 : 1 })
       .skip(skipItems)
-      .limit(numberPerPage);
+      .limit(numberPerPage)
+      .populate({ path: "tickets", model: "Ticket", select: "title" });
 
     // Check if any orders were found
     if (!orders || orders.length === 0) {
-      res.status(200).json({ success: true, orders: [] });
+      return res.status(200).json({ success: true, orders: [] });
     }
 
     // Return the orders
@@ -44,13 +98,18 @@ const getOneOrder = async (req, res, next) => {
       .populate({
         path: "products.product",
         model: "Product",
+        select: "name price",
       })
       .populate({
         path: "user",
         model: "User",
-        select: "firstName lastName email",
+        select: "firstName lastName email phones",
+      })
+      .populate({
+        path: "tickets",
+        model: "Ticket",
+        select: "title description",
       });
-
     // Check if any orders were found
     if (!order) {
       throw new Error("Order not found");
@@ -66,6 +125,7 @@ const getOneOrder = async (req, res, next) => {
 
 const updateOrderStatus = async (req, res, next) => {
   try {
+    console.log(req.params);
     // Check for the requested Id
     const orderId = await Order.findById(req.params.orderId);
     if (!Order) {
@@ -104,5 +164,38 @@ const updateOrderStatus = async (req, res, next) => {
     next(error);
   }
 };
+const addTicket = async (req, res, next) => {
+  try {
+    // Validate ticket input
+    validateSchema(ticketCreationSchema, req.body);
 
-module.exports = { getAllOrders, updateOrderStatus, getOneOrder };
+    // Extracting data from the request body
+    const { title, description, item_ids } = req.body;
+
+    // Decode token to get admin ID
+    const token = req.headers.authorization.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Creating a new ticket document
+    const newTicket = await Ticket.create({
+      title,
+      type: "order",
+      description,
+      item_ids,
+      createdBy: decoded.id,
+    });
+
+    // Update orders with the new ticket id
+    await Order.updateMany(
+      { _id: { $in: item_ids } },
+      { $push: { tickets: newTicket._id } }
+    );
+
+    // Sending a success response with the newly created ticket
+    res.status(201).json({ Ticket: newTicket });
+  } catch (error) {
+    // Handling errors
+    next(error);
+  }
+};
+module.exports = { getAllOrders, updateOrderStatus, getOneOrder, addTicket };
