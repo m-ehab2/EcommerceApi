@@ -3,9 +3,9 @@ const Joi = require("joi");
 // Define Joi schema for product validation
 const productValidationSchema = Joi.object({
   name: Joi.string().required(),
-  images: Joi.array().items(
-    Joi.object({ name: Joi.string(), url: Joi.string() })
-  ),
+  images: Joi.array()
+    .max(6)
+    .items(Joi.object({ name: Joi.string(), url: Joi.string() })),
   description: Joi.string().required(),
   modelNumber: Joi.string().required(),
   manufacturer: Joi.string().required(),
