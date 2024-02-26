@@ -5,7 +5,7 @@ const ticketSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
     description: { type: String, required: true },
-    type: { type: String, required: true },
+    type: { type: String, enum: ["product", "order"], required: true },
     item_ids: [
       {
         type: mongoose.Schema.Types.ObjectId,
