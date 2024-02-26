@@ -4,6 +4,7 @@ const { createTokenAdmin } = require("../utilities/tokenTools");
 const adminValidationSchema = require("../validation/adminCreationValidation");
 const jwt = require("jsonwebtoken");
 const Log = require("../models/log");
+const validateSchema = require("../helpers/validateSchema");
 
 const loginAdmin = async (req, res, next) => {
   try {
@@ -44,14 +45,11 @@ const loginAdmin = async (req, res, next) => {
 
 const createAdmin = async (req, res, next) => {
   try {
+    // Validate request body
+    validateSchema(adminValidationSchema, req.body);
+
     // Get admin info from request body
     const { username, password, authorities } = req.body;
-
-    // Validate request body
-    const { error } = adminValidationSchema.validate(req.body);
-    if (error) {
-      throw error;
-    }
 
     // Check duplicate username
     const admin = await Admin.findOne({ username: username });
@@ -113,7 +111,7 @@ const updateAdmin = async (req, res, next) => {
   try {
     // Extract admin ID and updated authorities from request body
     const id = req.params.adminId;
-    const { authorities } = req.body;
+    const authorities = req.body;
 
     // Update authorities for the admin in the database
     const updatedAdmin = await Admin.findByIdAndUpdate(
@@ -166,14 +164,17 @@ const deleteAdmin = async (req, res, next) => {
 
     // Create log item
     await Log.create({
-      process: `Deleted Admin ${adminId}`,
+      process: `Deleted Admin ${deletedAdmin._id}`,
       doneBy: decoded.username,
     });
 
     // Return success response
     res
-      .state(200)
-      .json({ success: true, message: "Admin deleted successfully" });
+      .status(200)
+      .json({
+        success: true,
+        message: `Admin ${deletedAdmin.username} deleted successfully`,
+      });
   } catch (error) {
     // Pass any errors to the error handling middleware
     next(error);
