@@ -32,8 +32,15 @@ const orderSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
+
+// Adding a virtual property to calculate total number of products in an order
+orderSchema.virtual("totalItems").get(function () {
+  return this.products.reduce((total, product) => total + product.quantity, 0);
+});
 
 // Create Order model
 const Order = mongoose.model("Order", orderSchema);
