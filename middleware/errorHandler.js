@@ -55,7 +55,8 @@ const errorHandler = (err, req, res, next) => {
     });
   } else if (
     err.message === "Email is already registered" ||
-    err.message === "Duplicate Product"
+    err.message === "Duplicate Product" ||
+    err.message === "Duplicate Admin Username"
   ) {
     return res.status(409).json({
       success: false,
