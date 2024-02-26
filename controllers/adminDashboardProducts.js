@@ -6,7 +6,10 @@ const ticketValidationSchema = require("../validation/productCreationValidation"
 const Category = require("../models/category");
 const Ticket = require("../models/ticket");
 const mongoose = require("mongoose");
+const validateSchema = require("../helpers/validateSchema");
+const ticketCreationSchema = require("../validation/ticketCreationValidation");
 const { ObjectId } = mongoose.Types;
+const jwt = require("jsonwebtoken");
 
 const createProduct = async (req, res, next) => {
   try {
@@ -345,25 +348,28 @@ const deleteProducts = async (req, res, next) => {
 const addTicket = async (req, res, next) => {
   try {
     // Validate ticket input
-    const { error } = ticketValidationSchema.validate(req.body);
-    if (error) {
-      throw new Error(error);
-    }
+    validateSchema(ticketCreationSchema, req.body);
 
     // Extracting data from the request body
-    const { title, description, product_ids } = req.body;
+    const { title, description, item_ids } = req.body;
+
+    // Decode token to get admin ID
+    const token = req.headers.authorization.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // Creating a new ticket document
     const newTicket = await Ticket.create({
       title,
+      type: "product",
       description,
-      product_ids,
+      item_ids,
+      createdBy: decoded.id,
     });
 
-    // Update products with the new ticket id
+    // Update orders with the new ticket id
     await Product.updateMany(
-      { _id: { $in: product_ids } }, // Update products with matching IDs
-      { $push: { tickets: newTicket._id } } // Add the new ticket ID to the tickets array
+      { _id: { $in: item_ids } },
+      { $push: { tickets: newTicket._id } }
     );
 
     // Sending a success response with the newly created ticket
