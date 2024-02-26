@@ -22,14 +22,14 @@ router.post(
   adminAuthController.createAdmin
 );
 
-// Route to create a new admin
+// Route to get all admins
 router.get(
   "/admins",
   checkAdminAuthorities(["admin"]),
   adminAuthController.getAllAdmins
 );
 
-// Route to create a new admin
+// Route to edit admin authorities
 router.patch(
   "/admins/:adminId",
   checkAdminAuthorities(["admin"]),
@@ -227,11 +227,18 @@ router.get(
   adminOrdersController.getOneOrder
 );
 
-// Route to get all orders
+// Route to update one order status
 router.patch(
   "/orders/:orderId",
   checkAdminAuthorities(["orders"]),
   adminOrdersController.updateOrderStatus
+);
+
+// Route to add ticket to order
+router.post(
+  "/orders/ticket",
+  checkAdminAuthorities(["orders"]),
+  adminOrdersController.addTicket
 );
 
 module.exports = router;
