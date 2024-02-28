@@ -76,7 +76,12 @@ const getAllOrders = async (req, res, next) => {
       .sort({ [sortBy]: order === "desc" ? -1 : 1 })
       .skip(skipItems)
       .limit(numberPerPage)
-      .populate({ path: "tickets", model: "Ticket", select: "title" });
+      .populate({ path: "tickets", model: "Ticket", select: "title" })
+      .populate({
+        path: "user",
+        model: "User",
+        select: "firstName lastName",
+      });
 
     // Check if any orders were found
     if (!orders || orders.length === 0) {
