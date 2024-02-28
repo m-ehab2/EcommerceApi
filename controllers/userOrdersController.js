@@ -15,7 +15,6 @@ const createOrder = async (req, res, next) => {
 
     // Extract order details from request body
     const {
-      trackingNumber,
       products,
       address,
       paymentMethod,
@@ -23,6 +22,14 @@ const createOrder = async (req, res, next) => {
       voucher,
       finalPrice,
     } = req.body;
+
+    // Generating a random tracking number
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let trackingNumber = "";
+    for (let i = 0; i < 6; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      trackingNumber += characters[randomIndex];
+    }
 
     // Checking for duplicate tracking number
     const oldOrder = await Order.findOne({ trackingNumber: trackingNumber });
@@ -57,7 +64,7 @@ const createOrder = async (req, res, next) => {
     await User.findByIdAndUpdate(user, { $push: { orders: order._id } });
 
     // Return the created order
-    res.status(201).json({ success: true, Order: req.body });
+    res.status(201).json({ success: true, Order: order });
   } catch (error) {
     // Handle any unexpected errors
     next(error);
