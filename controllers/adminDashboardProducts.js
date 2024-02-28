@@ -118,7 +118,6 @@ const getAllProducts = async (req, res, next) => {
     }
 
     if (category && category.match(/^[0-9a-fA-F]{24}$/)) {
-      console.log(category);
       const categoryObjectId = new ObjectId(category);
       searchQuery.category = categoryObjectId;
     }
