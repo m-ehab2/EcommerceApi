@@ -145,7 +145,7 @@ const getAllProducts = async (req, res, next) => {
     }
 
     //Get page number from request params
-    const pageNumber = parseInt(req.query.p, 10) || 1;
+    const pageNumber = parseInt(req.query.page, 10) || 1;
     const numberPerPage = parseInt(req.query.limit) || 10;
     const skipItems = (pageNumber - 1) * numberPerPage;
 
@@ -169,15 +169,33 @@ const getAllProducts = async (req, res, next) => {
       {
         $limit: numberPerPage,
       },
+      {
+        // Populate the field category
+        $lookup: {
+          from: "categories",
+          localField: "category",
+          foreignField: "_id",
+          as: "category",
+        },
+      },
+      // Flatten the populated array
+      {
+        $unwind: "$category",
+      },
+      {
+        // Add fields for categoryName and stock
+        $addFields: {
+          categoryName: "$category.name",
+          stock: {
+            $reduce: {
+              input: "$colors",
+              initialValue: 0,
+              in: { $add: ["$$value", "$$this.quantity"] },
+            },
+          },
+        },
+      },
     ]);
-
-    // Calculate stock for each product
-    for (const product of products) {
-      product.stock = product.colors.reduce(
-        (total, color) => total + color.quantity,
-        0
-      );
-    }
 
     // Return the products
     res.status(200).json({
