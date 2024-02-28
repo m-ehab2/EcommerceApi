@@ -170,10 +170,14 @@ const getAllProducts = async (req, res, next) => {
         $limit: numberPerPage,
       },
     ]);
-    // Check if any products were found
-    // if (!products || products.length === 0) {
-    //   res.status(200).json({ success: true, products: [] });
-    // }
+
+    // Calculate stock for each product
+    for (const product of products) {
+      product.stock = product.colors.reduce(
+        (total, color) => total + color.quantity,
+        0
+      );
+    }
 
     // Return the products
     res.status(200).json({
