@@ -174,17 +174,20 @@ const getAllProducts = async (req, res, next) => {
           from: "categories",
           localField: "category",
           foreignField: "_id",
-          as: "category",
+          as: "fetchedCategory",
         },
       },
       // Flatten the populated array
       {
-        $unwind: "$category",
+        $unwind: "$fetchedCategory",
       },
       {
         // Add fields for categoryName and stock
         $addFields: {
-          categoryName: "$category.name",
+          category: {
+            name: "$fetchedCategory.name",
+            id: "$fetchedCategory._id",
+          },
           stock: {
             $reduce: {
               input: "$colors",
@@ -192,6 +195,11 @@ const getAllProducts = async (req, res, next) => {
               in: { $add: ["$$value", "$$this.quantity"] },
             },
           },
+        },
+      },
+      {
+        $project: {
+          fetchedCategory: 0, // Exclude the original "category" field if needed
         },
       },
     ]);
