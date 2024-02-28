@@ -6,6 +6,7 @@ const adminCatController = require("../controllers/adminDashboardCategories");
 const adminProductsController = require("../controllers/adminDashboardProducts");
 const adminOrdersController = require("../controllers/adminDashboardOrders");
 const adminVoucherController = require("../controllers/adminDashboardVouchers");
+const adminLogsController = require("../controllers/adminDashboardLogs");
 const checkAdminAuthorities = require("../middleware/abac");
 
 // Admin Authentication Routs
@@ -240,5 +241,10 @@ router.post(
   checkAdminAuthorities(["orders"]),
   adminOrdersController.addTicket
 );
+
+// Log Control Routes
+
+// Route to get all orders
+router.get("/logs", checkAdminAuthorities([]), adminLogsController.getAllLogs);
 
 module.exports = router;
