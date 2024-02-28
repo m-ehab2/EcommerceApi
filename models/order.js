@@ -20,7 +20,10 @@ const orderSchema = new mongoose.Schema(
       city: { type: String, required: true },
       state: { type: String, required: true },
     },
-    paymentMethod: { type: String, required: true },
+    paymentMethod: {
+      type: String,
+      enum: ["Cash on Delivery", "Credit"],
+    },
     deliveryStatus: {
       type: String,
       enum: ["pending", "packaging", "shipping", "delivered", "canceled"],
