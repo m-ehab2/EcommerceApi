@@ -80,7 +80,6 @@ const editCategory = async (req, res, next) => {
     // Extract category ID and updated data from request body
     const categoryName = req.params.categoryName;
     const updatedData = req.body;
-    console.log(categoryName, req.body);
 
     // Validate request body against the Joi schema
     const valid =
@@ -92,7 +91,7 @@ const editCategory = async (req, res, next) => {
 
     // Check if category ID is provided
     if (!categoryName) {
-      throw new Error("Category ID is required");
+      throw new Error("Category Name is required");
     }
 
     // Find the category by ID and update it with the provided data
