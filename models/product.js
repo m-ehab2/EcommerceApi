@@ -37,9 +37,8 @@ const productSchema = new mongoose.Schema(
 );
 
 // Calculate stock property as sum of quantities of all colors
-// Calculate stock property as sum of quantities of all colors
 productSchema.virtual("stock").get(function () {
-  if (this.colors && Array.isArray(this.colors)) {
+  if (this.colors) {
     return this.colors.reduce((total, color) => total + color.quantity, 0);
   } else {
     return null;
