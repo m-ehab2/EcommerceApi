@@ -116,6 +116,11 @@ const getOneOrder = async (req, res, next) => {
         path: "tickets",
         model: "Ticket",
         select: "title description",
+      })
+      .populate({
+        path: "voucher",
+        model: "Voucher",
+        select: "code type discount",
       });
     // Check if any orders were found
     if (!order) {
