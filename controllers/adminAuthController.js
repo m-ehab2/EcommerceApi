@@ -74,7 +74,7 @@ const createAdmin = async (req, res, next) => {
 
     // Create log item
     await Log.create({
-      process: `Deleted ${newAdmin.id}`,
+      process: `Deleted ${newAdmin.username}`,
       doneBy: decoded.username,
     });
 
@@ -131,7 +131,7 @@ const updateAdmin = async (req, res, next) => {
 
     // Create log item
     await Log.create({
-      process: `Updated Admin ${id}`,
+      process: `Updated Admin ${updateAdmin.username}`,
       doneBy: decoded.username,
     });
 
@@ -164,17 +164,15 @@ const deleteAdmin = async (req, res, next) => {
 
     // Create log item
     await Log.create({
-      process: `Deleted Admin ${deletedAdmin._id}`,
+      process: `Deleted Admin ${deletedAdmin.username}`,
       doneBy: decoded.username,
     });
 
     // Return success response
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: `Admin ${deletedAdmin.username} deleted successfully`,
-      });
+    res.status(200).json({
+      success: true,
+      message: `Admin ${deletedAdmin.username} deleted successfully`,
+    });
   } catch (error) {
     // Pass any errors to the error handling middleware
     next(error);
