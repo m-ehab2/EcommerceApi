@@ -30,7 +30,7 @@ const orderSchema = new mongoose.Schema(
       default: "pending",
     },
     tickets: [{ type: mongoose.Schema.Types.ObjectId, ref: "Ticket" }],
-    voucher: { type: String },
+    voucher: { type: mongoose.Schema.Types.ObjectId, ref: "Voucher" },
     finalPrice: { type: Number, required: true },
   },
   {
