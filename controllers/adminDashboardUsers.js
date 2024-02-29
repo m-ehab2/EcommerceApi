@@ -121,6 +121,11 @@ const getAllUsers = async (req, res, next) => {
       {
         $limit: limit,
       },
+      {
+        $project: {
+          password: 0, // Exclude the password field
+        },
+      },
     ]);
 
     // // Return the list of users in the response
