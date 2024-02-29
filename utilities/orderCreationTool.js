@@ -231,6 +231,14 @@ const productIds = [
   "65d64445ac4acbdfef8fe0ca",
 ];
 
+const voucherIds = [
+  "65d75df25d77658bafbcdf12",
+  "65df2ecf60c7997795b98c98",
+  "65df2edc60c7997795b98c9b",
+  "65df2ef160c7997795b98c9e",
+  "65df58fd32f155227512fa61",
+];
+
 function pickRandomLocation(locations) {
   const randomIndex = Math.floor(Math.random() * locations.length);
   const randomGovernorate = locations[randomIndex].governorate;
@@ -268,12 +276,14 @@ const createNewOrder = () => {
   const paymentMethod = getRandomPaymentMethod();
   const finalPrice = getRandomInteger(100, 1500);
   const user = pickRandomId(userIds);
+  const voucher = pickRandomId(voucherIds);
   const order = {
     products: products,
     address: address,
     user: user,
     paymentMethod: paymentMethod,
     finalPrice: finalPrice,
+    voucher: voucher,
   };
   return order;
 };
