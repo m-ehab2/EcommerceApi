@@ -1,6 +1,7 @@
 const updateUserSchema = require("../validation/userUpdateValidation");
 const User = require("../models/user");
-
+const Order = require("../models/order");
+const jwt = require("jsonwebtoken");
 //User Control Logic
 const getAllUsers = async (req, res, next) => {
   try {
@@ -57,16 +58,14 @@ const getAllUsers = async (req, res, next) => {
         // If an and key hasn`t been added to the query we add it
         searchQuery["$and"] = [];
         if (state) {
-          searchQuery["$or"].push(
-            { "address_1.state": state },
-            { "address_2.state": state }
-          );
+          searchQuery["$and"].push({
+            $or: [{ "address_1.state": state }, { "address_2.state": state }],
+          });
         }
         if (city) {
-          searchQuery["$or"].push(
-            { "address_1.city": city },
-            { "address_2.city": city }
-          );
+          searchQuery["$and"].push({
+            $or: [{ "address_1.city": city }, { "address_2.city": city }],
+          });
         }
       }
     }
@@ -255,6 +254,20 @@ const deleteUsers = async (req, res, next) => {
       throw new Error("User IDs array is required");
     }
 
+    userIds.forEach(async (e) => {
+      const user = await User.findById(e);
+      if (!user) {
+        throw new Error("User not Found");
+      }
+      if (user.orders) {
+        if (user.orders.length > 0) {
+          user.orders.forEach(async (e) => {
+            await Order.findByIdAndDelete(e);
+          });
+        }
+      }
+    });
+
     // Delete all users from the database
     const deletedUsers = await User.deleteMany({ _id: { $in: userIds } });
 
@@ -262,13 +275,24 @@ const deleteUsers = async (req, res, next) => {
     if (deletedUsers.deletedCount === 0) {
       throw new Error("No users found to delete");
     }
+    //Get username of authorized admin
+    const token = req.headers.authorization.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Create log item
+    await Log.create({
+      process: `Deleted ${userIds.length} Users`,
+      doneBy: decoded.username,
+    });
 
     // Return a success message or the number of users deleted
     res.status(200).json({
-      message: `${deletedUsers.deletedCount} users deleted successfully`,
+      success: true,
+      message: `Deleted ${deletedUsers.deletedCount} users`,
     });
   } catch (error) {
     // Pass the error to the next middleware
+    console.log("xx");
     next(error);
   }
 };
