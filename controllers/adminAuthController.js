@@ -74,7 +74,7 @@ const createAdmin = async (req, res, next) => {
 
     // Create log item
     await Log.create({
-      process: `Deleted ${newAdmin.username}`,
+      process: `Created ${newAdmin.username}`,
       doneBy: decoded.username,
     });
 

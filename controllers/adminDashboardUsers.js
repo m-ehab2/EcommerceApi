@@ -1,6 +1,7 @@
 const updateUserSchema = require("../validation/userUpdateValidation");
 const User = require("../models/user");
 const Order = require("../models/order");
+const Log = require("../models/log");
 const jwt = require("jsonwebtoken");
 //User Control Logic
 const getAllUsers = async (req, res, next) => {
@@ -88,7 +89,6 @@ const getAllUsers = async (req, res, next) => {
       // If sortBy or order is not provided some default criteria is provided
       sortQuery["firstName"] = -1; // sorting by firstName field in descending order
     }
-
     // Query the search query to get the count of documents
     const totalCount = await User.countDocuments(searchQuery);
 
