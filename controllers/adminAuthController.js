@@ -120,6 +120,8 @@ const updateAdmin = async (req, res, next) => {
       { new: true }
     );
 
+    console.log(updatedAdmin);
+
     // Check if admin with the provided ID exists
     if (!updatedAdmin) {
       throw new Error("Admin not found");
@@ -131,7 +133,7 @@ const updateAdmin = async (req, res, next) => {
 
     // Create log item
     await Log.create({
-      process: `Updated Admin ${updateAdmin.username}`,
+      process: `Updated Admin ${updatedAdmin.username}`,
       doneBy: decoded.username,
     });
 

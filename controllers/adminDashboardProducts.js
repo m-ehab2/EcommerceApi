@@ -58,10 +58,7 @@ const createProduct = async (req, res, next) => {
       // Find category ID
       const productCategory = await Category.findOne({
         name: productData.category,
-        subCategories: productData.subCategory,
       });
-
-      console.log(productData.category, productData.subCategory);
 
       // If category not found or does't have the same subcategory throw error
       if (!productCategory) {
@@ -73,6 +70,16 @@ const createProduct = async (req, res, next) => {
 
       // Create product document
       const createdProduct = await Product.create(productData);
+
+      //Get username of authorized admin
+      const token = req.headers.authorization.split(" ")[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+      // Create log item
+      await Log.create({
+        process: `Created Product ${createdProduct.name}`,
+        doneBy: decoded.username,
+      });
 
       // Send response with product data
       res.status(200).json({ success: true, productData: createdProduct });
@@ -258,26 +265,23 @@ const updateProduct = async (req, res, next) => {
         name: images[index].name,
         url: response.display_url,
       }));
-      productData.images = imagesUrls;
+      imagesUrls.forEach((e) => {
+        productData.images.push(e);
+      });
 
       // Find category ID
       const productCategory = await Category.findOne({
         name: productData.category,
-        subCategories: productData.subCategory,
       });
 
-      console.log(
-        productData.category,
-        productData.subCategory,
-        productCategory
-      );
+      // console.log(productData, files);
 
       // If category not found or does't have the same subcategory throw error
-      if (!productCategory) {
-        throw new Error("Invalid Category");
-      }
+      // if (!productCategory) {
+      //   throw new Error("Invalid Category");
+      // }
 
-      // // Add category ID to product data
+      // Add category ID to product data
       productData.category = productCategory._id;
 
       // Create product document
@@ -289,8 +293,8 @@ const updateProduct = async (req, res, next) => {
         }
       );
 
-      // // Send response with product data
-      res.status(200).json({ success: true, product: updatedProduct });
+      // Send response with product data
+      res.status(200).json({ success: true, updatedProduct });
     });
   } catch (error) {
     next(error);
@@ -300,7 +304,13 @@ const updateProduct = async (req, res, next) => {
 const getProduct = async (req, res, next) => {
   try {
     // Fetch product from the database
-    const product = await Product.findById({ _id: req.params.productId });
+    const product = await Product.findById({
+      _id: req.params.productId,
+    }).populate({
+      path: "category",
+      model: "Category",
+      select: "name",
+    });
 
     // Return the list of users in the response
     res.status(200).json(product);
@@ -364,6 +374,15 @@ const deleteProducts = async (req, res, next) => {
       throw new Error("No products found to delete");
     }
 
+    //Get username of authorized admin
+    const token = req.headers.authorization.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Create log item
+    await Log.create({
+      process: `Deleted  ${deletedProducts.deletedCount} Products`,
+      doneBy: decoded.username,
+    });
     // Return a success message or the number of products deleted
     res.status(200).json({
       message: `${deletedProducts.deletedCount} products deleted successfully`,

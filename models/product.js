@@ -24,7 +24,7 @@ const productSchema = new mongoose.Schema(
     },
     reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }],
     category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
-    subcategory: { type: String, required: true },
+    subcategory: { type: String },
     keywords: [{ type: String }],
     frozen: { type: Boolean, default: false },
     tickets: [{ type: mongoose.Schema.Types.ObjectId, ref: "Ticket" }],
