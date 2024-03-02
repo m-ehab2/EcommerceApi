@@ -5,6 +5,7 @@ const productValidationSchema = require("../validation/productCreationValidation
 const ticketValidationSchema = require("../validation/productCreationValidation");
 const Category = require("../models/category");
 const Ticket = require("../models/ticket");
+const Log = require("../models/log");
 const mongoose = require("mongoose");
 const validateSchema = require("../helpers/validateSchema");
 const ticketCreationSchema = require("../validation/ticketCreationValidation");
